@@ -1,32 +1,34 @@
 classdef threeGPPChannel
-    %3GPP Rayleigh channel model for  
+    %3GPP Rayleigh channel model for
     %  Example usage:
     %------------------------------
     % lte=threeGPPChannel(Fs,'EVA5Hz');
     % lte=lte.initCh();
-    % lte.ChType='EPA5Hz';
     
-    properties 
-        ThreeGPP
+    properties
+        %ThreeGPP
         ChFs
         ChType
         Ch
+        NumCh
     end
     
-    
-    methods 
+    properties(Access=protected)
+    ThreeGPP
+    end
+    methods
         
         function this=threeGPPChannel(ChFs,chtype)
-            load('ThreeGPP');
-            this.ThreeGPP=ThreeGPP;
+            ThreeGPP=load('ThreeGPP');
+            this.ThreeGPP=ThreeGPP.ThreeGPP;
             if nargin>0
                 this.ChFs=ChFs;
-               if sum(strcmp(chtype,this.ThreeGPP.info))
-                   this.ChType=chtype;
-               else
-               error('LTE:WrongChannelModel',...
-                      'Error. \nchtype must be one of these options %s.',strjoin(this.ThreeGPP.info));
-               end
+                if sum(strcmp(chtype,this.ThreeGPP.info))
+                    this.ChType=chtype;
+                else
+                    error('LTE:WrongChannelModel',...
+                        'Error. \nchtype must be one of these options %s.',strjoin(this.ThreeGPP.info));
+                end
                 %this.ChType=ChType;
             end
             
@@ -36,21 +38,29 @@ classdef threeGPPChannel
             this.ChFs=fs;
         end
         
+        function this=set.NumCh(this,N)
+            this.NumCh=N;
+        end
+        
         function this=set.ChType(this,chtype)
             if sum(strcmp(chtype,this.ThreeGPP.info))
-            this.ChType=chtype;
-            else   
-               error('LTE:WrongChannelModel',...
-                      'Error. \nchtype must be one of these options %s.',strjoin(this.ThreeGPP.info));
+                this.ChType=chtype;
+            else
+                error('LTE:WrongChannelModel',...
+                    'Error. \nchtype must be one of these options %s.',strjoin(this.ThreeGPP.info));
             end
-   
+            
+        end
+        
+        function threeGPPInfo=get3GPPInfo(this)
+            threeGPPInfo=this.ThreeGPP.info;
         end
         
         function this=initCh(this)
             %Possible ChTypes:
             % EPA5Hz, EVA5Hz, EVA70Hz, ETU70Hz, ETU300Hz
-            load('ThreeGPP');
-            Ts=1/this.ChFs;
+            %load('ThreeGPP');
+            %Ts=1/this.ChFs;
             switch this.ChType
                 case 'EPA5Hz'
                     Tau=this.ThreeGPP.EPA.TapDelays;
@@ -74,12 +84,16 @@ classdef threeGPPChannel
                     Fd=this.ThreeGPP.ETU.Doppeler300Hz;
             end
             
-            rayleigh=rayleighchan(Ts,Fd,Tau,PdB);
-            %RayleighChan.DopplerSpectrum=[doppler.gaussian]; default is RayleighChan.DopplerSpectrum=[doppler.jakes];
-            %RayleighChan.ResetBeforeFiltering=1;
-            rayleigh.NormalizePathGains=1;
-            rayleigh.StoreHistory=1;
-            this.Ch=rayleigh;
+            %             rayleigh=rayleighchan(Ts,Fd,Tau,PdB);
+            %             %rayleigh.DopplerSpectrum=[doppler.gaussian]; default is RayleighChan.DopplerSpectrum=[doppler.jakes];
+            %             rayleigh.ResetBeforeFiltering=0;
+            %             rayleigh.NormalizePathGains=1;
+            %             rayleigh.StoreHistory=0;
+            %             this.Ch=rayleigh;
+            this.Ch=cell(1,this.NumCh);
+            for I=1:this.NumCh
+                this.Ch{I}=comm.RayleighChannel('SampleRate',this.ChFs,'PathDelays',Tau,'AveragePathGains',PdB,'MaximumDopplerShift',Fd,'NormalizePathGains',true);
+            end
         end
         
     end
