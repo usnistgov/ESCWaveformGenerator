@@ -4,13 +4,11 @@
 		"Notes": "1. backslash in directories needs to be escaped with backslash",
 		"Basic": {
 			"Fs": 25.0,
-			"TotalTime": 1,
-			"SegmentTime": 0.01,
+			"Total Preview Time": 1,
+			"Segment Preview Time": 0.00131072,
 			"StartOnFile": 1.36,
 			"DefaultRadarFile": 1,
-			"ScaleFactor": 1e7,
-			"DefaultSignalDisplay": "None",
-			"InjectRadarAfter": 0.2,
+			"Radar Start Time": 0.2,
             "LTEWaveformDuration": 6.0,
             "LTEWaveformMaxDuration": 60.0,
 			"DefaultDirectories": {
@@ -20,17 +18,32 @@
                 "RadarMeasInfoFile_name": "File_Parameters.xlsx"
 			}
 		},
-		"FrequencyOffsetMHz": {
+		"Signal": {
+            "Total Process Time": 60,
+            "Radar Start Time": 2,
+            "Segment Process Time": 0.5,
+            "Save Scale Factor": 1e7,
+            "LTE Channel Status": true,
+            "LTE Channel Type": "EPA5Hz",
+            "AWGN Status": true,
+            "AWGN Variance": 1e-9
+		},
+		"Signal Status": {
+			"Radar": true,
+			"LTE1": true,
+			"LTE2": true
+		},
+		"Frequency Offset MHz": {
 			"Radar": 0.0,
 			"LTE1": -5.0,
 			"LTE2": 5.0
 		},
-		"SignalStatus": {
-			"Radar": true,
-			"LTE1": true,
-			"LTE2": false
+		"Gain": {
+			"Radar": 1,
+			"LTE1": 1e-3,
+			"LTE2": 1e-3
 		},
-		"SpectrumAnalyzer": {
+		"Spectrum Analyzer": {
 			"SampleRate": 2.5E+7,
 			"PlotAsTwoSidedSpectrum": true,
 			"FrequencyResolutionMethod": "WindowLength",
@@ -45,7 +58,7 @@
 			"OverlapPercent": 1,
 			"Window": "Hann"
 		},
-		"TimeScope": {
+		"Time Scope": {
 			"SampleRate": 2.5E+7,
 			"ShowGrid": true,
 			"YLimits": [0,0.001]
