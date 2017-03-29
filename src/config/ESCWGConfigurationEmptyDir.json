@@ -22,11 +22,12 @@
             "Total Process Time": 60,
             "Radar Start Time": 2,
             "Segment Process Time": 0.5,
-            "Save Scale Factor": 1e7,
             "LTE Channel Status": true,
             "LTE Channel Type": "EPA5Hz",
             "AWGN Status": true,
-            "AWGN Variance": 1e-9
+            "AWGN Variance": 1e-9,
+            "Save Scale Factor": 1e7,
+            "Save Signal Info": true
 		},
 		"Signal Status": {
 			"Radar": true,
