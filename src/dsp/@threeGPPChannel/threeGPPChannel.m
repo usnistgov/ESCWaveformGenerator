@@ -43,7 +43,7 @@ classdef threeGPPChannel
         end
         
         function this=set.ChType(this,chtype)
-            if sum(strcmp(chtype,this.ThreeGPP.info))
+            if ismember(chtype,this.ThreeGPP.info)
                 this.ChType=chtype;
             else
                 error('LTE:WrongChannelModel',...
