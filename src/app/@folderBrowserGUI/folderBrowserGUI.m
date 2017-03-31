@@ -1,6 +1,13 @@
 classdef folderBrowserGUI < matlab.apps.AppBase
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
+    %Folder browser GUI with sort numbered files
+    %   Example usage:
+    %             dialogText='Select waveforms folder';
+    %             defaultExt='dat';
+    %             defaultDir='C:\'
+    %             folderBrowser=folderBrowserGUI(defaultDir,dialogText,defaultExt)
+    %             folderBrowser=SelectFolder(folderBrowser,SomeUIFig);
+    %             waveformNames=getFileNames(folderBrowser,'withext');
+    %             waveformPaths=getFullFileNamesWithPath(folderBrowser,'withext');
     
     properties (Access=protected)
         defaultDir
