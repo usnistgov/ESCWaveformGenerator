@@ -11,6 +11,7 @@
 			"Radar Start Time": 0.2,
             "LTEWaveformDuration": 6.0,
             "LTEWaveformMaxDuration": 60.0,
+            "Save Signal Info": true,
 			"DefaultDirectories": {
 				"RadarDir": "",
 				"LTEDir": "",
@@ -22,12 +23,14 @@
             "Total Process Time": 60,
             "Radar Start Time": 2,
             "Segment Process Time": 0.5,
-            "LTE Channel Status": true,
-            "LTE Channel Type": "EPA5Hz",
             "AWGN Status": true,
             "AWGN Variance": 1e-9,
             "Save Scale Factor": 1e7,
-            "Save Signal Info": true
+            "LTE Channel Status": false,
+            "LTE Channel Type": {
+                   "LTE1": "EPA5Hz",
+                   "LTE2": "EVA5Hz"
+            }
 		},
 		"Signal Status": {
 			"Radar": true,
