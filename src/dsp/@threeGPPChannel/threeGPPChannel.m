@@ -14,13 +14,13 @@ classdef threeGPPChannel
     end
     
     properties(Access=protected)
-    ThreeGPP
+        ThreeGPP
     end
     methods
         
         function this=threeGPPChannel(ChFs,chtype)
-            ThreeGPP=load('ThreeGPP');
-            this.ThreeGPP=ThreeGPP.ThreeGPP;
+            Load3GPP=load('ThreeGPP');
+            this.ThreeGPP=Load3GPP.ThreeGPP;
             if nargin>0
                 this.ChFs=ChFs;
                 if sum(strcmp(chtype,this.ThreeGPP.info))
@@ -61,28 +61,7 @@ classdef threeGPPChannel
             % EPA5Hz, EVA5Hz, EVA70Hz, ETU70Hz, ETU300Hz
             %load('ThreeGPP');
             %Ts=1/this.ChFs;
-            switch this.ChType
-                case 'EPA5Hz'
-                    Tau=this.ThreeGPP.EPA.TapDelays;
-                    PdB=this.ThreeGPP.EPA.PathGains;
-                    Fd=this.ThreeGPP.EPA.Doppeler5Hz;
-                case 'EVA5Hz'
-                    Tau=this.ThreeGPP.EVA.TapDelays;
-                    PdB=this.ThreeGPP.EVA.PathGains;
-                    Fd=this.ThreeGPP.EVA.Doppeler5Hz;
-                case 'EVA70Hz'
-                    Tau=this.ThreeGPP.EVA.TapDelays;
-                    PdB=this.ThreeGPP.EVA.PathGains;
-                    Fd=this.ThreeGPP.EVA.Doppeler70Hz;
-                case 'ETU70Hz'
-                    Tau=this.ThreeGPP.ETU.TapDelays;
-                    PdB=this.ThreeGPP.ETU.PathGains;
-                    Fd=this.ThreeGPP.ETU.Doppeler70Hz;
-                case 'ETU300Hz'
-                    Tau=this.ThreeGPP.ETU.TapDelays;
-                    PdB=this.ThreeGPP.ETU.PathGains;
-                    Fd=this.ThreeGPP.ETU.Doppeler300Hz;
-            end
+            
             
             %             rayleigh=rayleighchan(Ts,Fd,Tau,PdB);
             %             %rayleigh.DopplerSpectrum=[doppler.gaussian]; default is RayleighChan.DopplerSpectrum=[doppler.jakes];
@@ -92,6 +71,29 @@ classdef threeGPPChannel
             %             this.Ch=rayleigh;
             this.Ch=cell(1,this.NumCh);
             for I=1:this.NumCh
+                switch this.ChType{I}
+                    case 'EPA5Hz'
+                        Tau=this.ThreeGPP.EPA.TapDelays;
+                        PdB=this.ThreeGPP.EPA.PathGains;
+                        Fd=this.ThreeGPP.EPA.Doppeler5Hz;
+                    case 'EVA5Hz'
+                        Tau=this.ThreeGPP.EVA.TapDelays;
+                        PdB=this.ThreeGPP.EVA.PathGains;
+                        Fd=this.ThreeGPP.EVA.Doppeler5Hz;
+                    case 'EVA70Hz'
+                        Tau=this.ThreeGPP.EVA.TapDelays;
+                        PdB=this.ThreeGPP.EVA.PathGains;
+                        Fd=this.ThreeGPP.EVA.Doppeler70Hz;
+                    case 'ETU70Hz'
+                        Tau=this.ThreeGPP.ETU.TapDelays;
+                        PdB=this.ThreeGPP.ETU.PathGains;
+                        Fd=this.ThreeGPP.ETU.Doppeler70Hz;
+                    case 'ETU300Hz'
+                        Tau=this.ThreeGPP.ETU.TapDelays;
+                        PdB=this.ThreeGPP.ETU.PathGains;
+                        Fd=this.ThreeGPP.ETU.Doppeler300Hz;
+                end
+                
                 this.Ch{I}=comm.RayleighChannel('SampleRate',this.ChFs,'PathDelays',Tau,'AveragePathGains',PdB,'MaximumDopplerShift',Fd,'NormalizePathGains',true);
             end
         end
