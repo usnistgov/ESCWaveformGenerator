@@ -153,7 +153,7 @@ classdef waveforms < signalFile & threeGPPChannel
            % update to exact radar start time for return
            radarStartTimeAdj=radarStartSeg*this.samplesPerSegment*1/this.Fs;
            %[SaveWaveformFileId,errmsg_write]=fopen(saveFileNamePath,'a','l','UTF-8');
-           [SaveWaveformFileId,errmsg_write]=fopen(saveFileNamePath,'w','l','UTF-8');
+           [SaveWaveformFileId,errmsg_write]=fopen(saveFileNamePath,'W','l','UTF-8');
            NumOfActiveLTESigs=sum(this.LTEStatus);
            if isempty(errmsg_write)
                if this.LTEChState
