@@ -72,7 +72,7 @@ classdef folderBrowserGUI < matlab.apps.AppBase
                     if nargin > 1
                         uialert(UIFigure,folderBrowser.directoryName,['No ', folderBrowser.defaultExt,' files found in']);
                     end
-                    return;
+                    %return;
                 else
                     for f_in=1:length(dr)
                         file_name_cell{f_in}= dr(f_in).name;
@@ -81,7 +81,8 @@ classdef folderBrowserGUI < matlab.apps.AppBase
                     folderBrowser.fileNames=sortByNunbers(file_name_cell.');
                     
                 end
-
+            else
+                    folderBrowser.fileNames=[];
             end
         end
         
