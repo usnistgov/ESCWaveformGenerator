@@ -64,6 +64,7 @@ classdef waveforms < signalFile & threeGPPChannel
             % directly
             this=readRadarMeta(this);
             this=setRadarMeasFileNum(this,radarMeasFileNum);
+            
             this=setRfGain(this);
             
             this=initFile(this);
