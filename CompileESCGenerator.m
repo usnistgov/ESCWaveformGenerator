@@ -37,5 +37,10 @@ mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_
 
 cd(SOURCE_DIR);
 copyfile config ..\bin\config;
+copyfile res ..\bin\res;
 copyfile(SPLASH_FILE, '..\bin\app\splash.png')
 cd('..')
+
+%% restart matlab
+!matlab &
+exit
