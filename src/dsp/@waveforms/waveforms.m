@@ -99,14 +99,14 @@ classdef waveforms < signalFile & threeGPPChannel
         end
         
 
-        function [this,t0]=mixSignal(this,t0,txWaveform_resampled)
+        function [this,t0,interfBndPowr]=mixSignal(this,t0,txWaveform_resampled,bndPowrStatus,freqRange)
             t=t0+(0:this.samplesPerSegment-1).'*1/this.Fs;
             Radarshift=exp(1i*(2*pi*this.radarFreqOffset*1e6)*t);
             
             NLTEavAilable=length(txWaveform_resampled);
             NLTESegAvailble=floor(NLTEavAilable/this.samplesPerSegment);
             NumOfActiveLTESigs=sum(this.LTEStatus);
-            
+            interfBndPowr=NaN;
             if this.LTEChState
                 
                 LTESigCh=complex(zeros(this.samplesPerSegment,NumOfActiveLTESigs));
@@ -134,12 +134,14 @@ classdef waveforms < signalFile & threeGPPChannel
             if this.AWGNStatus
                     WGN=sqrt(this.AWGNVar)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);                 
             end
-            
-            
+            interfSig=LTESig+WGN;
+            if bndPowrStatus
+            interfBndPowr=util.bandPowerC(interfSig,this.Fs,freqRange);
+            end
             radarMeasData=readMeasData(this);
             this=seekNextPositionSamples(this);
             radarSignal=this.radarStatus*this.radarGain*(radarMeasData.*Radarshift);          
-            this.signalOut=radarSignal+sum(LTESig,2)+WGN;
+            this.signalOut=radarSignal+interfSig;
 
             t0=t(end);
         end
