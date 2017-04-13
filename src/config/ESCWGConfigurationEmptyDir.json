@@ -48,8 +48,7 @@
 			"LTE2": 1e-3
 		},
 		"Spectrum Analyzer": {
-			"SampleRate": 2.5E+7,
-			"PlotAsTwoSidedSpectrum": true,
+            "SpectrumType": "Power",
 			"FrequencyResolutionMethod": "WindowLength",
 			"FFTLengthSource": "Property",
 			"FFTLength": 1024,
@@ -62,8 +61,19 @@
 			"OverlapPercent": 1,
 			"Window": "Hann"
 		},
+		"Spectrogram": {
+            "SpectrumType": "Spectrogram",
+			"FrequencyResolutionMethod": "WindowLength",
+			"FFTLengthSource": "Property",
+			"FFTLength": 256,
+			"WindowLength": 256,
+            "TimeResolutionSource":"Property",
+            "ReferenceLoad": 100,
+            "TimeResolution": 1e-3,
+			"Position": [749,227,976,721],
+			"Window": "Hann"
+		},
 		"Time Scope": {
-			"SampleRate": 2.5E+7,
 			"ShowGrid": true,
 			"YLimits": [0,0.001]
 		}
