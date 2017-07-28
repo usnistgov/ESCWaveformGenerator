@@ -406,9 +406,9 @@ classdef waveform %< threeGPPChannel
             this.totalTime=NumOfSeg*(this.samplesPerSegment*1/this.Fs);
             % radarStartTime length must be equal to number of Radar signals
             if length(this.radarStartTime)~=this.numRadarSignals
-                this.errorColl.mixSignal= MException('mixSignal:Initialization', ...
+                this.errorColl.fullWaveform= MException('fullWaveform:Initialization', ...
                     'radarStartTime length must equal numRadarSignals');
-                throw(this.errorColl.mixSignal);
+                throw(this.errorColl.fullWaveform);
             end
             % Radar start segment index start from 1
             if ~isempty(this.radarStartTime)
@@ -445,7 +445,7 @@ classdef waveform %< threeGPPChannel
                 % Window
                 % BW
                 if length(this.SIRData)~=this.numRadarSignals
-                    this.errorColl.misSignalSIR= MException('mixSignal:SIRInitialization', ...
+                    this.errorColl.misSignalSIR= MException('fullWaveform:SIRInitialization', ...
                         'Peaks must be a vector of structs(pks and locs) with length equal numRadarSignals');
                     throw(this.errorColl.misSignalSIR);
                 end
@@ -617,7 +617,7 @@ classdef waveform %< threeGPPChannel
                     
                 end
                 
-                this=resetSignalFiles(this);
+                this=resetWaveformFiles(this);
                 
                 
                 if calculateSIRFlag
@@ -640,7 +640,7 @@ classdef waveform %< threeGPPChannel
                     this.errorColl.WaveFormWriteJson=errmsg_write_json;
                 end
             catch errmsg_process
-                this.errorColl.mixSignal=errmsg_process;
+                this.errorColl.fullWaveform=errmsg_process;
             end
             %end
             %if isempty(errmsg_write) && isempty(errmsg_process)
@@ -656,12 +656,13 @@ classdef waveform %< threeGPPChannel
         
         
         function this=estimateGainsFromTargetSIR(this)
+%% test SIR set gains on waveform
             % estimate and set radarGain, LTEgain, ABIgain, and writeScaleFactor
             samplesPerSegmentF=this.samplesPerSegment;
             tempSamplesPerSegment=round(this.SIRData(1).window/(1/this.Fs));
             t=1/this.Fs*(0:(tempSamplesPerSegment-1)).';
             this.samplesPerSegment=tempSamplesPerSegment;
-            
+            this=updateSamplesPerSegment(this);
             %disable LTE channel state
             tempLTEChstate=this.LTEChState;
             this.LTEChState=false;
@@ -669,29 +670,35 @@ classdef waveform %< threeGPPChannel
             this=updateSamplesPerSegment(this);
             for I=1:this.numRadarSignals
                 %first estimate noise power, needs pks and locs
-                [ this.radarSignal(I),sigma_w2(I,1),medianPeak(I,1),noiseEst(:,I),maxPeak(I,1),maxPeakLoc(I)]=estimateRadarNoise(this.radarSignal(I), this.Fs,this.SIRData(I).original);
+                [ this.radarSignal(I),sigma_w2(I,1),medianPeak(I,1),noiseEst(:,I),maxPeak(I,1),maxPeakLoc(I)]=...
+                    estimateRadarNoise(this.radarSignal(I), this.Fs,this.SIRData(I).original);
                 % save current seek position
                 currentRadarSeekPosisionSamples(I)=getSeekPositionSamples(this.radarSignal(I));
                 % find location of max peak
-                %[~,maxPksIndx(I)]=max(this.SIRData(I).original.pks);
-                % half 1msec (window) from each side
-                %approxCenterOfPeaks(I)=(this.SIRData(I).original.locs(maxPksIndx(I))-this.SIRData(I).window)/(1/Fs);
-                peakSeekPositionSamples(I)=(maxPeakLoc(I)-this.SIRData(I).window/2)/(1/this.Fs);
+%                 peakSeekPositionSamples(I)=(maxPeakLoc(I)-this.SIRData(I).window/2)/(1/this.Fs);
+%                 this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakSeekPositionSamples(I));
+                peakSeekPositionSamples(I)=round((maxPeakLoc(I)-this.SIRData(I).window/2)/(1/this.Fs));
                 this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakSeekPositionSamples(I));
-                radarSignalData(:,I) =double(this.radarStatus(I))*readSamples(this.radarSignal(I)).*exp(1i*2*pi*this.radarFreqOffset(I)*t);
+                maxPeakSamples=readSamples(this.radarSignal(I));
+%                 [~,maxAccurateLocIndx(I)]=max(abs(maxPeakSamples));
+%                  peakAccurateSeekPositionSamples(I)=peakSeekPositionSamples(I)-((this.SIRData(I).window/2)/(1/this.Fs)-maxAccurateLocIndx(I));
+%                   this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakAccurateSeekPositionSamples(I));
+%                  maxAccuratePeakSamples=readSamples(this.radarSignal(I));
+                  tr=t+peakSeekPositionSamples(I)*(1/this.Fs);
+                radarSignalData(:,I) =double(this.radarStatus(I))*(maxPeakSamples.*exp(1i*2*pi*this.radarFreqOffset(I)*tr));
                 this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I),  currentRadarSeekPosisionSamples(I));
             end
             
             for I=1:this.numLTESignals
-                currentLTESeekPosisionSamples(I)=getSeekPositionSamples(this.LTESignal(I));
+                %currentLTESeekPosisionSamples(I)=getSeekPositionSamples(this.LTESignal(I));
                 LTESignalData(:,I) =double(this.LTEStatus(I))*readSamples(this.LTESignal(I)).*exp(1i*2*pi*this.LTEFreqOffset(I)*t);
-                this.LTESignal(I)=setSeekPositionSamples(this.LTESignal(I),  currentLTESeekPosisionSamples(I));
+               %this.LTESignal(I)=setSeekPositionSamples(this.LTESignal(I),  currentLTESeekPosisionSamples(I));
             end
             
             for I=1:this.numABISignals
-                currentABISeekPosisionSamples(I)=getSeekPositionSamples(this.ABISignal(I));
+                %currentABISeekPosisionSamples(I)=getSeekPositionSamples(this.ABISignal(I));
                 ABISignalData(:,I) =double(this.ABIStatus(I))*readSamples(this.ABISignal(I)).*exp(1i*2*pi*this.ABIFreqOffset(I)*t);
-                this.ABISignal(I)=setSeekPositionSamples(this.ABISignal(I),  currentABISeekPosisionSamples(I));
+                %this.ABISignal(I)=setSeekPositionSamples(this.ABISignal(I),  currentABISeekPosisionSamples(I));
             end
             
             P_KTB_dB=-174-30;
@@ -764,16 +771,23 @@ classdef waveform %< threeGPPChannel
             sigPInterf=sum((radarGainF.').*radarSignalData,2)+sum((LTEGainF.').*LTESignalData,2)+sum((ABIGainF.').*ABISignalData,2)+WGN; % this should be equal to sigPInterf
             %sum(sigPInterf-sigPInterf1)
             
-%             %scale by average PSD
+%             %scale by average PSD .e.g constant average psd
 %             avrgPSD=mean(abs(sigPInterf).^2)/this.Fs;
 %             constPSD=-130-30;
 %             constMultiply=sqrt(db2pow(constPSD)/avrgPSD);
             
             %scale by peaks>> min(median for each radar) >>-89 db
             refLoad=50;
-            meadianPeakPowMinus89dBm=db2pow(peakPowerThreshold_dB-(min(pow2db((radarGainF.*medianPeak).^2))-pow2db(refLoad)));
+            MedianPeaksdB=pow2db((radarGainF.*medianPeak).^2);
+            MedianPeaksdB=MedianPeaksdB(isfinite(MedianPeaksdB));
+            if ~isempty(MedianPeaksdB)
+            meadianPeakPowMinus89dBm=db2pow(peakPowerThreshold_dB-(min(MedianPeaksdB)-pow2db(refLoad)));
+            else
+                meadianPeakPowMinus89dBm=db2pow(-99-30);
+            end
+%             disp(radarGainF)
+%             disp(medianPeak)
             constMultiply=sqrt(meadianPeakPowMinus89dBm);
-            
             radarGainF=constMultiply*radarGainF;
             LTEGainF=constMultiply*LTEGainF;
             ABIGainF=constMultiply*ABIGainF;
@@ -800,12 +814,23 @@ classdef waveform %< threeGPPChannel
             %expects row vectors
             this=setGainVar(this,radarGainF.',LTEGainF.',ABIGainF.',AWGNVarF);
             this.writeScaleFactor=scaleFactor;
-            
-            
-            
         end
         
-        function this=resetSignalFiles(this)
+        function [perviewState, generationState]=isReady(this)
+            pars=getWaveformInfo(this,'parameters');
+            generationState=~any( structfun(@isempty, pars) );
+            
+            waveformFieldsRemove={'totalTime','radarStartTime','LTEStartTime','ABIStartTime','writeScaleFactor'};
+            fldNames=fieldnames(pars);
+            fldNames=fldNames(~ismember(fldNames,waveformFieldsRemove));
+            for I=1:length(fldNames)
+                fldValues{I}=this.(fldNames{I});
+            end
+            perviewStruct=cell2struct(fldValues',fldNames,1);
+            perviewState=~any( structfun(@isempty, perviewStruct) );
+        end
+        
+        function this=resetWaveformFiles(this)
             if ~isempty(this.waveformToFile)
                 this.waveformToFile=resetSignalToFile(this.waveformToFile);
             end
