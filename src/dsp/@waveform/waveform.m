@@ -51,7 +51,7 @@ classdef waveform %< threeGPPChannel
     end
     
     properties (Access=private)
-        saveFileNamePath
+        waveformFilepath
     end
     
     methods
@@ -226,9 +226,9 @@ classdef waveform %< threeGPPChannel
             end
         end
         
-        function this=setupWaveformToFile(this,saveFileNamePath)
-            this.saveFileNamePath=saveFileNamePath;
-            this.waveformToFile=signalToFile(saveFileNamePath,'IQ');
+        function this=setupWaveformToFile(this,waveformFilepath)
+            this.waveformFilepath=waveformFilepath;
+            this.waveformToFile=signalToFile(waveformFilepath,'IQ');
             this.waveformToFile=setWriteScale(this.waveformToFile,this.writeScaleFactor);
             this.waveformToFile=initOutputFile(this.waveformToFile);
         end
@@ -631,7 +631,7 @@ classdef waveform %< threeGPPChannel
                     end
                 end
                 
-                jsonFilePath=strcat(this.saveFileNamePath(1:end-3),'json');
+                jsonFilePath=strcat(this.waveformFilepath(1:end-3),'json');
                 [SaveJsonFileId,errmsg_write_json]=fopen(jsonFilePath,'w','n','UTF-8');
                 waveformMeta=getWaveformInfo(this,'meta');
                 if isempty(errmsg_write_json)

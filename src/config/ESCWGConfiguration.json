@@ -10,7 +10,9 @@
             "AWGN Status": false,
             "AWGN Variance": 1e-9,
             "Write Scale Factor": 1e6,
-            "LTE Read Scale Factor": 1e-4,
+            "Manual Radar Read Scale": false,
+            "Radar Read Scale": 1e-7,
+            "LTE Read Scale Factor": 1e-5,
             "LTE Channel Status": true,
             "LTE Channel Type": {
                    "LTE1": "EPA5Hz",
@@ -44,22 +46,25 @@
                 "LTE1": 0,
                 "LTE2": 0
             },
-            "FileSources": {
-                "Radar1": "",
-                "Radar2": "",
-                "ABI": "",
-                "LTE1": "",
-                "LTE2": ""
+            "Source": {
+                "File": {
+                    "Radar1": "",
+                    "Radar2": "",
+                    "ABI": "",
+                    "LTE1": "",
+                    "LTE2": ""
+                },
+                "Path":{
+                    "RadarDir": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5",
+                    "LTEDir": "D:\\Spectrum-Share_Public\\LTESignals",
+                    "radarMetaFile": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5\\FileMeta.xlsx"
+			   }
             },
-            "DestinationPaths": {
-                "Waveform": ""
-
-            },
-			"DefaultPaths": {
-				"RadarDir": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5",
-				"LTEDir": "D:\\Spectrum-Share_Public\\LTESignals",
-                "radarMetaFile": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5\\FileMeta.xlsx"
-			}
+            "Destination": {
+                "WaveformFile": "",
+                "File Name Prefix": "testRadarWaveform",
+                "Path": "D:\\Spectrum-Share\\SanDiegoMixedWaveformsTestV2"
+            }
 		},
 		"Preview": {
 			"Total Preview Time": 1,
@@ -73,8 +78,9 @@
             }
 		},
         "SignalMulti": {
-            "Number of Files": 100,
-            "File Name Prefix": "testRadarWaveform",
+            "Number Of Files": 120,
+            "Use Parallel": "On",
+            "Number Of Workers": 20,
             "Method": {
                 "Radar1 Start Time": "Random",
                 "Radar2 Start Time": "Random",
@@ -98,9 +104,9 @@
                 "Radar1 Start Time": 1,
                 "Radar2 Start Time": 1,
                 "ABI Start Time": 1,
-                "Radar1 Frequency": 0.1e6,
-                "Radar2 Frequency": 0.1e6,
-                "ABI Frequency": 0.1e6,
+                "Radar1 Frequency": 50e3,
+                "Radar2 Frequency": 50e3,
+                "ABI Frequency": 50e3,
                 "Target SIR": 2
             }
         },
