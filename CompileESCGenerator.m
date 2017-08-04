@@ -6,7 +6,7 @@ BUILD_DIR='bin';
 APP_DIR='bin\app';
 IN_APP_DIR='app';
 DSP_DIR='dsp';
-%UTIL_DIR='util';
+UTIL_DIR='util';
 if exist(BUILD_DIR,'dir')~=7
     mkdir(BUILD_DIR)
 end
@@ -24,16 +24,16 @@ ICON_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_ico
 SPLASH_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_splash.png';
 %EXT_DIR='ext';
 
-SEARCH_DIR1=fullfile(SOURCE_DIR,IN_APP_DIR); % start from root
+%SEARCH_DIR1=fullfile(SOURCE_DIR,IN_APP_DIR); % start from root
 %FUNC_DIR=fullfile(SOURCE_DIR, UTIL_DIR); % start from root
 %FUNC_NAME1='read_xsl_info_f.m';
 %FUNC_NAME2='radar_data_reader.m';
 %FUNC1=fullfile(ROOT_DIR,SOURCE_DIR, UTIL_DIR,FUNC_NAME1);
 %FUNC2=fullfile(ROOT_DIR,SOURCE_DIR, UTIL_DIR,FUNC_NAME2);
-SEARCH_DIR=fullfile(SOURCE_DIR,DSP_DIR);
-
+SEARCH_DIR1=fullfile(SOURCE_DIR,DSP_DIR);
+SEARCH_DIR2=fullfile(SOURCE_DIR,UTIL_DIR);
 %mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-a',FUNC1 ,'-a', FUNC2,'-r',ICON_FILE);
-mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-I',SEARCH_DIR,'-r',ICON_FILE);
+mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-I',SEARCH_DIR1,'-I',SEARCH_DIR2,'-r',ICON_FILE);
 
 cd(SOURCE_DIR);
 copyfile config ..\bin\config;
