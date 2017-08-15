@@ -5,6 +5,7 @@
 		"Signal": {
 			"Fs": 25e6,
             "Total Process Time": 90,
+            "Short File": false,
             "Target SIR": 30,
             "Segment Process Time": 0.5,
             "AWGN Status": false,
@@ -95,8 +96,8 @@
                 "Radar1 Start Time": [4,30],
                 "Radar2 Start Time": [4,30],
                 "ABI Start Time": [4,30],
-                "Radar1 Frequency": [-0.25e6,0.25e6],
-                "Radar2 Frequency": [9.75e6,10.25e6],
+                "Radar1 Frequency": [-0.1e6,0.1e6],
+                "Radar2 Frequency": [9.9e6,10.1e6],
                 "ABI Frequency": [-5e6,5e6],
                 "Target SIR": [0,50]
             },
@@ -104,9 +105,9 @@
                 "Radar1 Start Time": 1,
                 "Radar2 Start Time": 1,
                 "ABI Start Time": 1,
-                "Radar1 Frequency": 50e3,
-                "Radar2 Frequency": 50e3,
-                "ABI Frequency": 50e3,
+                "Radar1 Frequency": 10e3,
+                "Radar2 Frequency": 10e3,
+                "ABI Frequency": 10e3,
                 "Target SIR": 2
             }
         },

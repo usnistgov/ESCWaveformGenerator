@@ -7,6 +7,8 @@ APP_DIR='bin\app';
 IN_APP_DIR='app';
 DSP_DIR='dsp';
 UTIL_DIR='util';
+RES_DIR='res';
+ICON_FILE='ESCGenIconVc.res';
 if exist(BUILD_DIR,'dir')~=7
     mkdir(BUILD_DIR)
 end
@@ -20,7 +22,8 @@ APP_SOURCE_PATH=fullfile(ROOT_DIR,SOURCE_DIR,IN_APP_DIR,APP_SOURCE_NAME);
 
 
 OUT_DIR=fullfile(ROOT_DIR,APP_DIR);
-ICON_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_icon.ico';
+%ICON_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_icon.ico';
+ICON_PATH=fullfile(ROOT_DIR,SOURCE_DIR,RES_DIR,ICON_FILE);
 SPLASH_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_splash.png';
 %EXT_DIR='ext';
 
@@ -33,13 +36,13 @@ SPLASH_FILE='C:\Program Files\MATLAB\R2016b\toolbox\compiler\Resources\default_s
 SEARCH_DIR1=fullfile(SOURCE_DIR,DSP_DIR);
 SEARCH_DIR2=fullfile(SOURCE_DIR,UTIL_DIR);
 %mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-a',FUNC1 ,'-a', FUNC2,'-r',ICON_FILE);
-mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-I',SEARCH_DIR1,'-I',SEARCH_DIR2,'-r',ICON_FILE);
+mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_PATH,'-I',SEARCH_DIR1,'-I',SEARCH_DIR2,'-r',ICON_PATH);
 
-cd(SOURCE_DIR);
-copyfile config ..\bin\config;
-copyfile res ..\bin\res;
-copyfile(SPLASH_FILE, '..\bin\app\splash.png')
-cd('..')
+% cd(SOURCE_DIR);
+% copyfile config ..\bin\config;
+% copyfile res ..\bin\res;
+% copyfile(SPLASH_FILE, '..\bin\app\splash.png')
+% cd('..')
 
 %% restart matlab
 !matlab &

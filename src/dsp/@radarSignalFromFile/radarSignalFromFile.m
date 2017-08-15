@@ -118,48 +118,6 @@ classdef radarSignalFromFile<signalFromFile
         end
         
         
-%         function this=setSeekPositionSamples(this,seekPositionSamples)
-%             this.seekPositionSamples=seekPositionSamples;
-%         end
-        
-%         function this=set.samplesPerSegment(this,samplesPerSegment)
-%             if ~isempty(this.inputFile)
-%              signalTime=getSignalTime(this);
-%             if samplesPerSegment<=floor(signalTime.totalNumberOfSamples) && samplesPerSegment>=1
-%             this.samplesPerSegment=samplesPerSegment;
-%             else
-%               this.ERROR.samplesPerSegment= MException('signalFile:samplesPerSegment', ...
-%                     'samplesPerSegment must be >=1 and <= %d',floor(signalTime.totalNumberOfSamples));
-%                 throw(this.ERROR.samplesPerSegment);
-%             end
-%             else
-%                 this.samplesPerSegment=samplesPerSegment;
-%             end
-%         end
-        
-%         function this=set.EOFAction(this,EOFAction)
-%             EOFActionOptions={'Rzeros','Rewind','Rempty','Rnormal'};
-%             if ismember(EOFAction,EOFActionOptions)
-%             this.EOFAction=EOFAction;
-%             else
-%                 this.ERROR.EOFAction= MException('signalFile:EOFActionInitialization', ...
-%                     'EOFAction must be one of these options: %s',strjoin(EOFActionOptions));
-%                 throw(this.ERROR.EOFAction);
-%             end
-%         end
-        
-%         function this=set.IQDirection(this,IQDirection)
-%             IQDirectionOptions={'IQ','QI'};
-%             if ismember(IQDirection,IQDirectionOptions)
-%                 this.IQDirection=IQDirection;
-%             else
-%                 this.ERROR.IQDirection= MException('signalFile:IQDirection', ...
-%                     'IQDirection must be one of these options: %s',strjoin(IQDirectionOptions));
-%                 throw(this.ERROR.IQDirection);
-%             end
-%             
-%         end
-
          function this=setReadScale(this,readScale)
              if nargin<2
                  if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
@@ -175,9 +133,6 @@ classdef radarSignalFromFile<signalFromFile
                  this.readScale=readScale;
              end
          end
-%          function seekPositionSamples=getSeekPositionSamples(this)
-%              seekPositionSamples=this.seekPositionSamples;
-%          end
 
          
         function signalFromFileInfo=getSignalInfo(this)
@@ -221,83 +176,6 @@ classdef radarSignalFromFile<signalFromFile
             end
         end
         
-%         function this=initFile(this)
-%             %errmsg = '';
-%             switch this.IQDirection
-%                 case 'IQ'
-%                     
-%                     this.IQDirectionNum=[1 2];
-%                 case 'QI'
-%                     this.IQDirectionNum=[2 1];
-%             end
-% 
-%             if isfield(this,'fileID') && this.fileID>=3
-%                 fclose(this.fileID);
-%             end
-%             
-%             if exist(this.inputFile, 'file') == 2
-%             [ FileID,errmsg]=fopen(this.inputFile,'r','l','UTF-8');
-%             else
-%                 errmsg='file does not exist';
-%             end
-%             
-%             if isempty(errmsg)
-%                 this.fileID=FileID;
-%             end
-%         end
-        
-%         function measData = readMeasData(this)
-%             seekPosition=this.bytesPerSample*this.seekPositionSamples;
-%             status=fseek( this.fileID,seekPosition,'bof'); %return 0 if success, o.w. -1   
-%             % rewind if eof and EOF action is Rwind 
-%             [Data_Vec_Interleaved,count]=fread(this.fileID,2*this.samplesPerSegment,'int16=>double');
-%             % we always request even number of data bc of IQ
-%             % if file is not standard, check last segment
-%             if feof(this.fileID)
-%                     if mod(count,2) % if count is odd ignore last value
-%                         Data_Vec_Interleaved=Data_Vec_Interleaved(1:end-1);
-%                         count=count-1;
-%                     end
-%                 
-%                     switch this.EOFAction
-%                         case 'Rzeros'
-%                             % pad with zeros the rest of the array or return zeros
-%                             Data_Vec_Interleaved=[Data_Vec_Interleaved;zeros(2*this.samplesPerSegment-count,1)];
-%                             %Data_Vec_Interleaved= padarray(Data_Vec_Interleaved,[2*this.samplesPerSegment-count,0],'post');
-%                         case 'Rempty' % in this case empty last segment
-%                             if count~=2*this.samplesPerSegment
-%                             Data_Vec_Interleaved=[];
-%                             end
-%                         case 'Rewind'
-%                             frewind(this.fileID)
-%                             % set seek position to zero
-%                             [Data_Vec_Interleaved1,~]=fread(this.fileID,2*this.samplesPerSegment-count,'int16=>double');
-%                             Data_Vec_Interleaved=[Data_Vec_Interleaved;Data_Vec_Interleaved1];)
-%                             % set seek position so when
-%                             % seekNextPositionSamples() is called, seek
-%                             % position is adjusted
-%                             this=setSeekPositionSamples(this,count/2-this.samplesPerSegment);
-%                         case 'Rnormal' % do nothing
-%                         otherwise
-%                             this.ERROR.signalFile= MException('signalFile:EOFAction', ...
-%                                 'EOF action not set properly');
-%                             throw(this.ERROR.readMeasData);
-%                             
-%                     end
-%               
-%             end
-%             DataIQ=reshape(Data_Vec_Interleaved.',2,[]).';
-%             %clear Data_Vec_Interleaved
-%             % Note I&Q are switched in the radar meas files
-%             Data_Vector_c=complex(DataIQ(:,this.IQDirectionNum(1)),DataIQ(:,this.IQDirectionNum(2)));
-%             %clear DataIQ
-% 
-%             measData=Data_Vector_c*this.readScale;
-%         end
-        
-%         function this=seekNextPositionSamples(this)
-%                 this.seekPositionSamples=this.seekPositionSamples+this.samplesPerSegment;  
-%         end
         
         function [this,sigmaW2,medianPeak,noiseEst,maxPeak,maxPeakLoc]=estimateRadarNoise(this,Fs,radarPeaks)
             segTime=0.8e-3;
@@ -310,23 +188,14 @@ classdef radarSignalFromFile<signalFromFile
             this.samplesPerSegment=round(segTime/(1/Fs));
             maxPeakLoc=radarPeaks.locs(maxPeakLocIndx);
             seekTime=maxPeakLoc+advancefromPeak;
-            this=setSeekPositionSamples(this,round(seekTime/(1/Fs)));
+            this=setSeekPositionSamples(this,round(seekTime/(1/Fs)));                     
             noiseEst =readSamples(this);
             sigmaW2=sum(abs(noiseEst).^2)/length(noiseEst);
             this.samplesPerSegment=samplesPerSegmentTemp;
             this.seekPositionSamples=seekPositionSamplesTemp;
         end
         
-%         function this=resetSignalFile(this)
-%             if this.fileID~= -1
-%                 fids=fopen('all');
-%                 if any(this.fileID==fids)
-%                 fclose(this.fileID);
-%                 end
-%             end
-% 
-%         end
-        
+
     end
     
 end

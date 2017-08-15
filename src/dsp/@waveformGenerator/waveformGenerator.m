@@ -5,7 +5,7 @@ classdef waveformGenerator<executor
     properties
         %waveforms              waveform
         waveformsMap
-        
+        shortFile              logical
     end
     
     methods
@@ -133,8 +133,8 @@ classdef waveformGenerator<executor
                     [testNoise,~,medianPeak,noiseEst,maxPeak,~]=estimateRadarNoise(testNoise,Fs,radarPeaks);
                     testNoise=resetSignalFromFile(testNoise);
                     
-                    SNRMax(J,1)=pow2db(maxPeak^2/dspFun.bandPowerC(noiseEst,Fs,[0-1e6 0+1e6]));
-                    SNRMedian(J,1)=pow2db(medianPeak^2/dspFun.bandPowerC(noiseEst,Fs,[0-1e6 0+1e6]));
+                    SNRMax(J,1)=pow2db(maxPeak^2/dspFun.bandPowerfiltC(noiseEst,Fs,[0-1e6 0+1e6]));
+                    SNRMedian(J,1)=pow2db(medianPeak^2/dspFun.bandPowerfiltC(noiseEst,Fs,[0-1e6 0+1e6]));
                 end
             end
             radarFileSources=radarFileSources(radarHavePeakFile);
@@ -151,6 +151,8 @@ classdef waveformGenerator<executor
             %'SPN432ndInstanceFcMHz','Antenna','SPN43PeakPowerdBm','LOMHz','ReferenceLeveldBm'
 %             this.useParallel= genParameters.SignalMulti.UseParallel;
 %             this.NumWorkers=genParameters.SignalMulti.NumberOfWorkers;
+           try
+            this.shortFile=genParameters.Signal.ShortFile;
             radarStartTimeMat=[createVar(this,genParameters.Signal.StartTime.Radar1,genParameters.SignalMulti.Method.Radar1StartTime,...
                 genParameters.SignalMulti.Bounds.Radar1StartTime,genParameters.SignalMulti.Step.Radar1StartTime),...
                 createVar(this,genParameters.Signal.StartTime.Radar2,genParameters.SignalMulti.Method.Radar2StartTime,...
@@ -205,8 +207,8 @@ classdef waveformGenerator<executor
             %assignin('base','radarFilePeaks',radarFilePeaks)
             radarOneSNR=estimateRadarOneSNR(this,genParameters.Signal.('Fs'),radarFileSources,genParameters.Signal.Source.Path.radarMetaFile,radarFilePeaks);
             %assignin('base','radarOneSNR',radarOneSNR)
-            SNRMedianLow=30;
-            SNRMedianHigh=60;
+            SNRMedianLow=45;
+            SNRMedianHigh=70;
             radarFileSourcesSelect=radarOneSNR.radarFileSources((radarOneSNR.('SNRMedian')>SNRMedianLow & radarOneSNR.('SNRMedian')<SNRMedianHigh));
             
             numDigits=numel(num2str(this.numFiles));
@@ -255,7 +257,11 @@ classdef waveformGenerator<executor
                 this.waveformsMap{I}('LTEReadScaleFactor')=genParameters.Signal.('LTEReadScaleFactor');
             end
             
+           catch ME
+               this.ERROR.initWaveformsMap=ME;
+           end
             
+         assignin('base','initwaveformsMap',this.waveformsMap);  
             
         end
         
@@ -295,6 +301,8 @@ classdef waveformGenerator<executor
         function [this,waveformsObj]=executeSequential(this)
             %generate signals sequentially
             waveformsObj=setupWaveforms(this);
+            forwardToMaxPeakFlag=this.shortFile;
+            try            
             for I=1:this.numFiles
                 waveformsObj(I)=setupLTEChannel(waveformsObj(I));
                 waveformsObj(I)=setupLTESignal(waveformsObj(I), this.waveformsMap{I}('LTESignalSource')...
@@ -316,14 +324,25 @@ classdef waveformGenerator<executor
                 end
                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
                 waveformsObj(I)=estimateGainsFromTargetSIR(waveformsObj(I));
-                waveformsObj(I)=generateFullWaveform(waveformsObj(I));
+                waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
-             %assignin('base','waveformsObjSeq',waveformsObj);
+            this=updateWaveformMapGains(this,waveformsObj);
+            [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
+            numDigits=numel(num2str(this.numFiles));
+            jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
+            waveformMapJSON=jsonencode(this.waveformsMap);
+            [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
+            fwrite(SaveJsonFileId,waveformMapJSON,'char');
+            catch ME
+                this.ERROR.sequentialGen=ME;
+            end 
+             assignin('base','waveformsObjSeq',waveformsObj);
         end
         
         function [this,waveformsObj]=executeParallel(this)
             %generate signals in parallel
             waveformsObj=setupWaveforms(this);
+            forwardToMaxPeakFlag=this.shortFile;
             try
             parfor I=1:this.numFiles
                 waveformsObj(I)=setupLTEChannel(waveformsObj(I));
@@ -346,13 +365,31 @@ classdef waveformGenerator<executor
                 end
                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
                 waveformsObj(I)=estimateGainsFromTargetSIR(waveformsObj(I));
-                waveformsObj(I)=generateFullWaveform(waveformsObj(I));
+                waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
+            this=updateWaveformMapGains(this,waveformsObj);
+            [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
+            numDigits=numel(num2str(this.numFiles));
+            jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
+            waveformMapJSON=jsonencode(this.waveformsMap);
+            [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
+            fwrite(SaveJsonFileId,waveformMapJSON,'char');
             catch ME
                 this.ERROR.parallelGen=ME;
-            end
+            end           
             assignin('base','waveformsObjPar',waveformsObj);
         end
+        
+        function this=updateWaveformMapGains(this,waveformsObj)
+            for I=1:this.numFiles
+                this.waveformsMap{I}('radarGain')=waveformsObj(I).('radarGain');
+                this.waveformsMap{I}('LTEGain')=waveformsObj(I).('LTEGain');
+                this.waveformsMap{I}('ABIGain')=waveformsObj(I).('ABIGain');
+                this.waveformsMap{I}('AWGNVar')=waveformsObj(I).('AWGNVar');
+                this.waveformsMap{I}('writeScaleFactor')=waveformsObj(I).('writeScaleFactor');
+            end
+        end
+        
         
         function this=runGenerator(this)
             this=runExecutor(this);

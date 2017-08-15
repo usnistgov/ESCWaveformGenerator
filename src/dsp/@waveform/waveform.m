@@ -375,7 +375,7 @@ classdef waveform %< threeGPPChannel
             interfNoiseSig=LTESigOut+ABISigOut+WGN;
             if bndPowrStatus
                 for I=1:this.numRadarSignals
-                    interfBndPowr(I,1)=dspFun.bandPowerC(interfNoiseSig,this.Fs,[this.radarFreqOffset(I)-Bw/2 this.radarFreqOffset(I)+Bw/2]);
+                    interfBndPowr(I,1)=dspFun.bandPowerfiltC(interfNoiseSig,this.Fs,[this.radarFreqOffset(I)-Bw/2 this.radarFreqOffset(I)+Bw/2]);
                 end
             end
             
@@ -400,8 +400,9 @@ classdef waveform %< threeGPPChannel
         end
         
         
-        function [this]=generateFullWaveform(this)
+        function [this]=generateFullWaveform(this,forwardToMaxPeakFlag)
             t0=0;
+            roundingConst=ceil(abs(log10(1/this.Fs))); % John suggestion
             NumOfSeg=floor(this.totalTime/(this.samplesPerSegment*1/this.Fs));
             this.totalTime=NumOfSeg*(this.samplesPerSegment*1/this.Fs);
             % radarStartTime length must be equal to number of Radar signals
@@ -436,6 +437,17 @@ classdef waveform %< threeGPPChannel
             end
             
             if calculateSIRFlag
+                
+                if nargin>1
+                    if forwardToMaxPeakFlag
+                        timeBeforMaxPeak=1;
+                        for I=1:this.numRadarSignals
+                           [~,maxIndx]=max(this.SIRData(I).original.pks);
+                           radarMaxPeakSeek=round(max(this.SIRData(I).original.locs(maxIndx)-timeBeforMaxPeak,0)*this.Fs);
+                           this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I),radarMaxPeakSeek);
+                        end
+                    end
+                end
                 %init vars
                 % this.SIRData length must be equal to number of Radar signals
                 %Expects: this.SIRData(I).original
@@ -557,13 +569,16 @@ classdef waveform %< threeGPPChannel
                                         interfernceWindow=[forwardLastInterfernceWindow((end-leftOverToNextSeg(I)+1):end,I);interfNoiseSig(1:(2*halfWindowSamp(I)-leftOverToNextSeg(I)))];
                                         % disp(['interfernceWindow=',num2str(length(interfernceWindow))])
                                         % disp(['2*halfWindowSamp(I)=',num2str(2*halfWindowSamp(I))])
-                                        this.SIRData(I).interferencePower(leftOverToNextSegidx_peaksLocs(I))=dspFun.bandPowerC(interfernceWindow,this.Fs,freqRange(I,:));
+                                        this.SIRData(I).interferencePower(leftOverToNextSegidx_peaksLocs(I))=dspFun.bandPowerfiltC(interfernceWindow,this.Fs,freqRange(I,:));
                                         % reset leftOverToNextSeg
                                         leftOverToNextSeg(I)=0;
                                         % disp(['leftOverToNextSeg(I)>0interfernceWindow=',num2str(length(interfernceWindow))])
                                     end
                                     
-                                    idx_peaksLocs=find(this.SIRData(I).peakLocations>=t(1) & this.SIRData(I).peakLocations<=t(end)); % pulses between start and end of t;
+                                    %idx_peaksLocs=find(this.SIRData(I).peakLocations>=t(1) & this.SIRData(I).peakLocations<=t(end)); % pulses between start and end of t;
+                                    idx_peaksLocs=round(this.SIRData(I).peakLocations,roundingConst)>=round(t(1),roundingConst)...
+                                        & round(this.SIRData(I).peakLocations,roundingConst)<=round(t(end),roundingConst);
+                                    %disp(num2str(idx_peaksLocs))
                                     if ~isempty(idx_peaksLocs)
                                         for J=1:length(idx_peaksLocs)
                                             % adjust to the beginning of the segment, and find the peak loc in samples
@@ -581,7 +596,7 @@ classdef waveform %< threeGPPChannel
                                             if startOfPeakWindow<=0
                                                 % use interfernce window from last seg if peak is close to the beginning
                                                 interfernceWindow=[forwardLastInterfernceWindow((end+startOfPeakWindow+1):end,I);interfNoiseSig(1:endOfPeakWindow)];
-                                                this.SIRData(I).interferencePower(idx_peaksLocs(J))=dspFun.bandPowerC(interfernceWindow,this.Fs,freqRange(I,:));
+                                                this.SIRData(I).interferencePower(idx_peaksLocs(J))=dspFun.bandPowerfiltC(interfernceWindow,this.Fs,freqRange(I,:));
                                                 
                                                 % disp(['startOfPeakWindow<=0interfernceWindow=',num2str(length(interfernceWindow))])
                                                 % disp(['forwardLastInterfernceWindow((end+startOfPeakWindow+1):end,I)=',num2str(length(forwardLastInterfernceWindow((end+startOfPeakWindow+1):end,I)))])
@@ -593,7 +608,7 @@ classdef waveform %< threeGPPChannel
                                                 %forwardInterfernceWindow(:,I)=interfNoiseSig(1:startOfPeakWindowend);
                                             else
                                                 interfernceWindow=interfNoiseSig((startOfPeakWindow+1):endOfPeakWindow);
-                                                this.SIRData(I).interferencePower(idx_peaksLocs(J))=dspFun.bandPowerC(interfernceWindow,this.Fs,freqRange(I,:));
+                                                this.SIRData(I).interferencePower(idx_peaksLocs(J))=dspFun.bandPowerfiltC(interfernceWindow,this.Fs,freqRange(I,:));
                                                 % disp(['elseinterfernceWindow=',num2str(length(interfernceWindow))])
                                             end
                                             
@@ -660,47 +675,100 @@ classdef waveform %< threeGPPChannel
             % estimate and set radarGain, LTEgain, ABIgain, and writeScaleFactor
             samplesPerSegmentF=this.samplesPerSegment;
             tempSamplesPerSegment=round(this.SIRData(1).window/(1/this.Fs));
-            t=1/this.Fs*(0:(tempSamplesPerSegment-1)).';
+            
+            t=1/this.Fs*(0:(tempSamplesPerSegment-1)).'; % reference to t=0 start time 
             this.samplesPerSegment=tempSamplesPerSegment;
             this=updateSamplesPerSegment(this);
             %disable LTE channel state
             tempLTEChstate=this.LTEChState;
             this.LTEChState=false;
             
+            if (isempty(this.radarStartTime)) || length((this.radarStartTime))~=this.numRadarSignals
+            radarStartTimeEst=zeros(1,this.numRadarSignals);
+            else
+            radarStartTimeEst=this.radarStartTime;
+            end
+            
+            if (isempty(this.LTEStartTime)) || length((this.LTEStartTime))~=this.numLTESignals
+            LTEStartTimeEst=zeros(1,this.numLTESignals);
+            else
+            LTEStartTimeEst=this.LTEStartTime;
+            end
+            
+            if (isempty(this.ABIStartTime)) || length((this.ABIStartTime))~=this.numABISignals
+            ABIStartTimeEst=zeros(1,this.numABISignals);
+            else
+            ABIStartTimeEst=this.ABIStartTime;
+            end
+            
+            
             this=updateSamplesPerSegment(this);
-            for I=1:this.numRadarSignals
+            
+            for JL=1:this.numLTESignals
+                currentLTESeekPosisionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));
+            end          
+            for JA=1:this.numABISignals
+                currentABISeekPosisionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
+            end
+            
+            for IR=1:this.numRadarSignals
                 %first estimate noise power, needs pks and locs
-                [ this.radarSignal(I),sigma_w2(I,1),medianPeak(I,1),noiseEst(:,I),maxPeak(I,1),maxPeakLoc(I)]=...
-                    estimateRadarNoise(this.radarSignal(I), this.Fs,this.SIRData(I).original);
+                [ this.radarSignal(IR),sigma_w2(IR,1),medianPeak(IR,1),noiseEst(:,IR),maxPeak(IR,1),maxPeakLoc(IR)]=...
+                    estimateRadarNoise(this.radarSignal(IR), this.Fs,this.SIRData(IR).original);
                 % save current seek position
-                currentRadarSeekPosisionSamples(I)=getSeekPositionSamples(this.radarSignal(I));
+                currentRadarSeekPosisionSamples(IR)=getSeekPositionSamples(this.radarSignal(IR));
                 % find location of max peak
 %                 peakSeekPositionSamples(I)=(maxPeakLoc(I)-this.SIRData(I).window/2)/(1/this.Fs);
 %                 this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakSeekPositionSamples(I));
-                peakSeekPositionSamples(I)=round((maxPeakLoc(I)-this.SIRData(I).window/2)/(1/this.Fs));
-                this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakSeekPositionSamples(I));
-                maxPeakSamples=readSamples(this.radarSignal(I));
+                peakSeekPositionSamples(IR)=round((maxPeakLoc(IR)-this.SIRData(IR).window/2)/(1/this.Fs));
+                this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR), peakSeekPositionSamples(IR));
+                maxPeakSamples=readSamples(this.radarSignal(IR));
+                
 %                 [~,maxAccurateLocIndx(I)]=max(abs(maxPeakSamples));
 %                  peakAccurateSeekPositionSamples(I)=peakSeekPositionSamples(I)-((this.SIRData(I).window/2)/(1/this.Fs)-maxAccurateLocIndx(I));
 %                   this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakAccurateSeekPositionSamples(I));
 %                  maxAccuratePeakSamples=readSamples(this.radarSignal(I));
-                  tr=t+peakSeekPositionSamples(I)*(1/this.Fs);
-                radarSignalData(:,I) =double(this.radarStatus(I))*(maxPeakSamples.*exp(1i*2*pi*this.radarFreqOffset(I)*tr));
-                this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I),  currentRadarSeekPosisionSamples(I));
+                  tr=t+peakSeekPositionSamples(IR)*(1/this.Fs);
+                radarSignalData(:,IR) =double(this.radarStatus(IR))*(maxPeakSamples.*exp(1i*2*pi*this.radarFreqOffset(IR)*tr));
+                this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR),  currentRadarSeekPosisionSamples(IR));
+                
+                % 1st dim data, 2nd dim signal, 3rd dim radar ref (radar peak)
+                for JL=1:this.numLTESignals
+                    LTESeekPositionSamples=round((radarStartTimeEst(IR)-LTEStartTimeEst(JL))*this.Fs)+peakSeekPositionSamples(IR);
+                    tl=t+LTESeekPositionSamples*(1/this.Fs);
+                    this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  LTESeekPositionSamples);
+                    LTESignalData(:,JL,IR) =double(this.LTEStatus(JL))*readSamples(this.LTESignal(JL)).*exp(1i*2*pi*this.LTEFreqOffset(JL)*tl);
+                end
+                
+                for JA=1:this.numABISignals
+                    ABISeekPositionSamples=round((radarStartTimeEst(IR)-ABIStartTimeEst(JA))*this.Fs)+peakSeekPositionSamples(IR);
+                    ta=t+ABISeekPositionSamples*(1/this.Fs);
+                    this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  ABISeekPositionSamples);
+                    ABISignalData(:,JA,IR) =double(this.ABIStatus(JA))*readSamples(this.ABISignal(JA)).*exp(1i*2*pi*this.ABIFreqOffset(JA)*ta);
+                end
+                
+
+                
             end
             
-            for I=1:this.numLTESignals
-                %currentLTESeekPosisionSamples(I)=getSeekPositionSamples(this.LTESignal(I));
-                LTESignalData(:,I) =double(this.LTEStatus(I))*readSamples(this.LTESignal(I)).*exp(1i*2*pi*this.LTEFreqOffset(I)*t);
-               %this.LTESignal(I)=setSeekPositionSamples(this.LTESignal(I),  currentLTESeekPosisionSamples(I));
+            for JL=1:this.numLTESignals
+                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  currentLTESeekPosisionSamples(JL));
             end
-            
-            for I=1:this.numABISignals
-                %currentABISeekPosisionSamples(I)=getSeekPositionSamples(this.ABISignal(I));
-                ABISignalData(:,I) =double(this.ABIStatus(I))*readSamples(this.ABISignal(I)).*exp(1i*2*pi*this.ABIFreqOffset(I)*t);
-                %this.ABISignal(I)=setSeekPositionSamples(this.ABISignal(I),  currentABISeekPosisionSamples(I));
+            for JA=1:this.numABISignals
+                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
             end
+%             for JL=1:this.numLTESignals
+%                 currentLTESeekPosisionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));
+%                 LTESignalData(:,JL) =double(this.LTEStatus(JL))*readSamples(this.LTESignal(JL)).*exp(1i*2*pi*this.LTEFreqOffset(JL)*t);
+%                 this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  currentLTESeekPosisionSamples(JL));
+%             end
             
+%             for JA=1:this.numABISignals
+%                 currentABISeekPosisionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
+%                 ABISignalData(:,JA) =double(this.ABIStatus(JA))*readSamples(this.ABISignal(JA)).*exp(1i*2*pi*this.ABIFreqOffset(JA)*t);
+%                 this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
+%             end
+%             
             P_KTB_dB=-174-30;
             peakPowerThreshold_dB=-89-30;%-119 dB
             
@@ -721,15 +789,21 @@ classdef waveform %< threeGPPChannel
             RDRSig=(rdrGainLowUpVol(:,2).').*radarSignalData;
             
             %
-            dBMin=3;
-            dBMax=6;
+            dBMin=1;
+            dBMax=1;
             LTEBandwidth=10e6;
-            avrgLTEPSD=pow2db(mean(abs(LTESignalData).^2,1).'/LTEBandwidth);
+            %avrgLTEPSD=pow2db(mean(abs(LTESignalData).^2,1).'/LTEBandwidth);
+            avrgLTEPSD=pow2db(max(mean(abs(LTESignalData).^2,1),[],3).'/LTEBandwidth);% mean of each LTE signal, min of each LTE signal relative to radar
             LTEGainsAboveKTB=randi([dBMin,dBMax],2,1);
             LTEGainsPow=db2pow((P_KTB_dB+LTEGainsAboveKTB)-avrgLTEPSD);
             LTEGainsVol=sqrt(LTEGainsPow);
             % in case of LTEStatus is 0, check for inf and set the gain to zero
-            LTEGainsVol(isinf(LTEGainsVol))=0;
+            LTEGainsVol(isinf(LTEGainsVol))=0; % gain for each LTE signal
+            
+            %LTESig=(LTEGainsVol.').*LTESignalData;
+%             for JL=1:this.numLTESignals
+%             LTESig(:,JL,:)=LTEGainsVol(JL)*LTESignalData(:,JL,:);
+%             end
             LTESig=(LTEGainsVol.').*LTESignalData;
             
             SIRtargetNum=db2pow(this.targetSIR);
@@ -744,17 +818,20 @@ classdef waveform %< threeGPPChannel
             AWGNVarF=db2pow(P_KTB_dB)*this.Fs;
             WGN=double(this.AWGNStatus)*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
             
-            yI=sum(LTESig,2)+sum(ABISig,2)+WGN;
+            % first radar interf
+            yI=sum(LTESig(:,:,1),2)+sum(ABISig(:,:,1),2)+WGN;
             
             freqRange=[this.radarFreqOffset(1)-this.SIRData(1).Bw/2 this.radarFreqOffset(1)+this.SIRData(1).Bw/2];
-            GI=sqrt(max(abs(RDRSig(:,1)))^2/(SIRtargetNum*dspFun.bandPowerC(yI,this.Fs,freqRange)));
+            GI=sqrt(max(abs(RDRSig(:,1)))^2/(SIRtargetNum*dspFun.bandPowerfiltC(yI,this.Fs,freqRange)));
             
-            yIGI=GI*yI;
+            %yIGI=GI*yI;
             GR2nd=ones(this.numRadarSignals,1);
             %GR2nd=this.radarStatus.';
             for I=2:this.numRadarSignals
+                yI2=sum(LTESig(:,:,I),2)+sum(ABISig(:,:,I),2)+WGN;
+                yIGI2=GI*yI2;
                 freqRange=[this.radarFreqOffset(I)-this.SIRData(I).Bw/2 this.radarFreqOffset(I)+this.SIRData(I).Bw/2];
-                GR2nd(I)=double(this.radarStatus(I))*sqrt((SIRtargetNum*dspFun.bandPowerC(RDRSig(:,1)+yIGI,this.Fs,freqRange))/max(abs(RDRSig(:,I)))^2);
+                GR2nd(I)=double(this.radarStatus(I))*sqrt((SIRtargetNum*dspFun.bandPowerfiltC(RDRSig(:,1)+yIGI2,this.Fs,freqRange))/max(abs(RDRSig(:,I)))^2);
             end
 
             radarGainF=rdrGainLowUpVol(:,2).*GR2nd;
@@ -768,7 +845,7 @@ classdef waveform %< threeGPPChannel
             WGN=this.AWGNStatus*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
            
             %sigPInterf1=RDRSig(:,1)+yIGI+GR2nd(2)*RDRSig(:,2);
-            sigPInterf=sum((radarGainF.').*radarSignalData,2)+sum((LTEGainF.').*LTESignalData,2)+sum((ABIGainF.').*ABISignalData,2)+WGN; % this should be equal to sigPInterf
+            sigPInterf=sum((radarGainF.').*radarSignalData,2)+sum((LTEGainF.').*LTESignalData(:,:,1),2)+sum((ABIGainF.').*ABISignalData(:,:,1),2)+WGN; % this should be equal to sigPInterf
             %sum(sigPInterf-sigPInterf1)
             
 %             %scale by average PSD .e.g constant average psd

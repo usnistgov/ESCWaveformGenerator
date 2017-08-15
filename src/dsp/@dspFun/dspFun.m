@@ -180,7 +180,8 @@ classdef dspFun
 %             p1=1/length(sigout)*sum(abs(sigout).^2);
 %         end
 
-        function p1=bandPowerfiltC(sig,Fs,fcenter)
+        function p1=bandPowerfiltC(sig,Fs,freq_range)
+            fcenter=(freq_range(1)+freq_range(1))/2;
             t=1/Fs*(0:(length(dspFun.Numerator)-1));
             Hd = dsp.FIRFilter( 'Numerator',dspFun.Numerator.*exp(1i*2*pi*fcenter*t));
             % always reset initial condition for power meas.
