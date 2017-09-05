@@ -10,7 +10,8 @@ classdef dspFun
         % flag  = 'scale';          % Sampling Flag
         % Apass=1
         % Astop=50
-        Numerator=[8.13196437761482e-05 9.73169434769315e-05 ...
+        % 1MHz low pass 12.5MHz, 2MHz filt of Fs=25MHz complex
+        NumeratorLPF8Percent=[8.13196437761482e-05 9.73169434769315e-05 ...
         0.000108312716549552 0.000112886074446983 0.000109948178794641 ...
         9.88600808042277e-05 7.95267719815486e-05 5.24581201307797e-05 ...
         1.87891781204993e-05 -1.97451220636764e-05 -6.08827848538715e-05 ...
@@ -170,29 +171,29 @@ classdef dspFun
 %             if isempty(Hd) || FsOrig~=Fs || fcenterOrig~=fcenter
 %                  FsOrig=Fs;
 %                  fcenterOrig=fcenter;
-%                 Hd = dsp.FIRFilter( 'Numerator',dspFun.Numerator);
+%                 Hd = dsp.FIRFilter( 'Numerator',dspFun.NumeratorLPF8Percent);
 %             end
 %             % always reset initial condition for power meas.
 %             Hd.InitialConditions=0;
-%             t=1/Fs*(0:(length(Hd.Numerator)-1));
-%             Hd.Numerator=Hd.Numerator.*exp(1i*2*pi*fcenter*t);
+%             t=1/Fs*(0:(length(Hd.NumeratorLPF8Percent)-1));
+%             Hd.NumeratorLPF8Percent=Hd.NumeratorLPF8Percent.*exp(1i*2*pi*fcenter*t);
 %             sigout=Hd(sig);
 %             p1=1/length(sigout)*sum(abs(sigout).^2);
 %         end
 
-        function p1=bandPowerfiltC(sig,Fs,freq_range)
-            fcenter=(freq_range(1)+freq_range(1))/2;
-            t=1/Fs*(0:(length(dspFun.Numerator)-1));
-            Hd = dsp.FIRFilter( 'Numerator',dspFun.Numerator.*exp(1i*2*pi*fcenter*t));
+        function p1=bandPowerfiltC(sig,Fs,freqRange)
+            fcenter=(freqRange(1)+freqRange(2))/2;
+            t=1/Fs*(0:(length(dspFun.NumeratorLPF8Percent)-1));
+            Hd = dsp.FIRFilter( 'Numerator',dspFun.NumeratorLPF8Percent.*exp(1i*2*pi*fcenter*t));
             % always reset initial condition for power meas.
             sigout=Hd(sig);
             p1=1/length(sigout)*sum(abs(sigout).^2);
         end
         
-        function [ sigOut,adjNuerator ] = bandPassFiltShift(sig,Fs,fcenter)
-            t=1/Fs*(0:(length(dspFun.Numerator)-1));
-            adjNuerator=dspFun.Numerator.*exp(1i*2*pi*fcenter*t);
-            Hd = dsp.FIRFilter( 'Numerator',adjNuerator);
+        function [ sigOut,adjNumerator ] = bandPassFiltShift(sig,Fs,fcenter)
+            t=1/Fs*(0:(length(dspFun.NumeratorLPF8Percent)-1));
+            adjNumerator=dspFun.NumeratorLPF8Percent.*exp(1i*2*pi*fcenter*t);
+            Hd = dsp.FIRFilter( 'Numerator',adjNumerator);
             % always reset initial condition for power meas.
             sigOut=Hd(sig);
         end

@@ -210,7 +210,7 @@ classdef waveformGenerator<executor
             SNRMedianLow=45;
             SNRMedianHigh=70;
             radarFileSourcesSelect=radarOneSNR.radarFileSources((radarOneSNR.('SNRMedian')>SNRMedianLow & radarOneSNR.('SNRMedian')<SNRMedianHigh));
-            
+ 
             numDigits=numel(num2str(this.numFiles));
             waveformFileNameFormat=strcat('%0',num2str(numDigits),'d');
             for I=1:this.numFiles

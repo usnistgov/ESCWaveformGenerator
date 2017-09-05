@@ -1,30 +1,22 @@
 classdef signalFromFile
-    %Radar Rsignal reader
+    %IQ data signal reader
     %   Read binary data from measurement files
     % Example usage:
-    %     Radar_info_file='metaFile.xlsx';
-    %     fileNo=1;
-    %     metaFilePath='metaFileDir';
-    %     radarMetaFile=fullfile(metaFilePath,Radar_info_file);
-    %     files_path='measFilesDir';
+    %     files_path='C:\measFilesDir';
     %     file_name='measFile.dat';
     %     measFile=fullfile(files_path,file_name);
     %
-    %     testwaveform=signalFromFile(file_path_name,radar_meta_file);
-    %     testwaveform=readRadarMeta(testwaveform);
-    %
-    %     testwaveform=setRadarMeasFileNum(testwaveform,fileNo);
-    %     testwaveform=setreadScale(testwaveform);
-    %
-    %     testwaveform=initRadarFile(testwaveform);
+    %     testwaveform=signalFromFile(measFile);
+    %     testwaveform=setreadScale(testwaveform,1);
+    %     testwaveform=initInputFile(testwaveform);
     %     seekPositionSamples=0;
     %     testwaveform=setSeekPositionSamples(testwaveform,seekPositionSamples);
-    %     samplesPerSegment=180*1024;
+    %     samplesPerSegment=50e3;
     %     testwaveform=setSamplesPerSegment(testwaveform,samplesPerSegment);
-    %     
-    %     testwaveform=readRadarMeasData(testwaveform);
-    %     testwaveform=seekNextPositionSamples(testwaveform);
-    %     measData=testwaveform.measData;
+    %     ------
+    %     measData=readSamples(testwaveform);
+    %     testwaveform=seekNextPositionSamples(testwaveform);    
+    %     -------
 
     
     properties (Access=protected)

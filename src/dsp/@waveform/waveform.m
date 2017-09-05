@@ -41,6 +41,8 @@ classdef waveform %< threeGPPChannel
         %        saveWaveformFileId
         waveformToFile       signalToFile
         success
+        estimateGainsMethod   char
+        measPar              struct
         targetSIR
         SIRdBmin
         SIRdBmax
@@ -54,12 +56,19 @@ classdef waveform %< threeGPPChannel
         waveformFilepath
     end
     
+     properties(Constant)%,Access=private)
+     LTEBw=9e6;
+     numLTEwindows=1;
+     P_KTB_dB=-174-30;
+     referenceLoad=50;
+     end
+    
     methods
-        function this=waveform(Fs)
-            
+        function this=waveform(Fs)     
             if nargin > 0
                 this.Fs=Fs;
             end
+            this.measPar=struct('radarPeakPower_dBm',[],'LTEPower_dBm',[],'ABIAdjust_dB',[],'AWGNPSD_dBm',[],'SIRwindow',[],'SIRBw',[]);
         end
         
         function this=set.Fs(this,Fs)
@@ -97,7 +106,7 @@ classdef waveform %< threeGPPChannel
         function this=set.targetSIR(this,targetSIR)
             this.targetSIR=targetSIR;
         end
-        
+%%        
         function this=setupRadarSignal(this,radarMeasFiles,radarMetaFile,radarSeekPositionSamples,readScale)
             IQDirection='QI';
             EOFAction='Rzeros';
@@ -126,13 +135,13 @@ classdef waveform %< threeGPPChannel
                 if  (exist(pksFileName, 'file') == 2)
                     this.SIRData(I).original=load(pksFileName);
                     this.SIRData(I).Bw=2e6;
-                    this.SIRData(I).window=1e-3;
+                    this.SIRData(I).window=10e-3; % need to change to the new design uses this.measPar.SIRwindow
                 end
 %              this.SIRData(I)=readPeaks(radarMeasFiles{I});
             end
             
         end
-        
+
 %         function pks=readPeaks(radarMeasFile)
 %             
 %             pksFileName=strcat(radarMeasFile(1:end-length('dec01.dat')),'pks.mat');
@@ -144,7 +153,7 @@ classdef waveform %< threeGPPChannel
 %                 pks=[];
 %             end
 %         end
-        
+%%        
         function this=setupABISignal(this,ABIMeasFiles,ABIMetaFile,ABIseekPositionSamples,readScale)
             IQDirection='QI';
             EOFAction='Rzeros';
@@ -171,7 +180,7 @@ classdef waveform %< threeGPPChannel
             end
             
         end
-        
+%%        
         function this=setupLTESignal(this,LTESignalPaths,LTEReadScale,LTEseekPositionSamples)
             %LTEReadScale is the scale applied to the signal read from the file
             %LTEGain is the gain applied to LTE signal while mixing
@@ -195,7 +204,7 @@ classdef waveform %< threeGPPChannel
                 this.LTESignal(I)=setSeekPositionSamples(this.LTESignal(I),LTEseekPositionSamples(I));
             end
         end
-        
+%%        
         function this=setupLTEChannel(this)
             if ~isempty(this.Fs)|| ~isempty(this.numLTESignals) || ~isempty(this.LTEChType)
                 if length(this.LTEChType)==this.numLTESignals
@@ -211,7 +220,7 @@ classdef waveform %< threeGPPChannel
                     'Error. \n One or more variable is not set: Fs , numLTESignals, LTEChType');
             end
         end
-        
+%%        
         function this=updateSamplesPerSegment(this)
             for I=1:this.numLTESignals
                 this.LTESignal(I).samplesPerSegment=this.samplesPerSegment;
@@ -312,7 +321,7 @@ classdef waveform %< threeGPPChannel
             end
             waveformsMeta=cell2struct(fldValues',fldNames,1);
         end
-        
+%%        
         function [this,t0,interfBndPowr]=generateWaveformSegment(this,t0,bndPowrStatus,Bw)
             t=t0+(0:this.samplesPerSegment-1).'*1/this.Fs;
             
@@ -399,7 +408,7 @@ classdef waveform %< threeGPPChannel
             t0=t(end)+1/this.Fs;
         end
         
-        
+%%        
         function [this]=generateFullWaveform(this,forwardToMaxPeakFlag)
             t0=0;
             roundingConst=ceil(abs(log10(1/this.Fs))); % John suggestion
@@ -445,6 +454,9 @@ classdef waveform %< threeGPPChannel
                            [~,maxIndx]=max(this.SIRData(I).original.pks);
                            radarMaxPeakSeek=round(max(this.SIRData(I).original.locs(maxIndx)-timeBeforMaxPeak,0)*this.Fs);
                            this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I),radarMaxPeakSeek);
+                           % when short file LTE, ABI need to be forwarded
+                           % to appropraite seek position// to be added
+                           
                         end
                     end
                 end
@@ -576,14 +588,19 @@ classdef waveform %< threeGPPChannel
                                     end
                                     
                                     %idx_peaksLocs=find(this.SIRData(I).peakLocations>=t(1) & this.SIRData(I).peakLocations<=t(end)); % pulses between start and end of t;
-                                    idx_peaksLocs=round(this.SIRData(I).peakLocations,roundingConst)>=round(t(1),roundingConst)...
-                                        & round(this.SIRData(I).peakLocations,roundingConst)<=round(t(end),roundingConst);
+                                    idx_peaksLocs=find(round(this.SIRData(I).peakLocations,roundingConst)>=round(t(1),roundingConst)...
+                                        & round(this.SIRData(I).peakLocations,roundingConst)<=round(t(end),roundingConst));
                                     %disp(num2str(idx_peaksLocs))
                                     if ~isempty(idx_peaksLocs)
                                         for J=1:length(idx_peaksLocs)
                                             % adjust to the beginning of the segment, and find the peak loc in samples
                                             % while above centerOfPeakSamp gives a close result of peak locs in samples,
                                             % we want to correct this by getting the max closest to previously calculated peak
+%                                             getSeekPositionSamples(this.RadarSignal(1))
+%                                             getSeekPositionSamples(this.RadarSignal(2))                                            
+%                                             getSeekPositionSamples(this.LTESignal(1))
+%                                             getSeekPositionSamples(this.LTESignal(2))
+                                            
                                             [peakMag,centerOfPeakSamp]=max(abs(radarSig(:,I)));
                                             startOfPeakWindow=centerOfPeakSamp-halfWindowSamp(I);
                                             endOfPeakWindow=centerOfPeakSamp+halfWindowSamp(I);
@@ -668,17 +685,128 @@ classdef waveform %< threeGPPChannel
                 this.success.message='Failed to generate';  
             end
         end
-        
-        
+%%        
+        function this=estimateGains(this)
+            switch this.estimateGainsMethod
+                case 'Power Levels'
+                    this=setPowerLevels(this);
+                case 'Target SIR'
+                    this=estimateGainsFromTargetSIR(this);
+                otherwise
+                    this.errorColl.estimateGains=MException('estimateGains:InvalidOption',...
+                        'Only valid options are:Power Levels, Target SIR');
+            end
+        end
+            
+%%        
+        function this=setPowerLevels(this)
+        % estimate and set radarGain, LTEgain, ABIgain, and writeScaleFactor
+            %measPar=struct('radardBm',[],'LTEdBm',[],'ABIdBm',[],'SIRwindow',[],'SIRBw')
+            samplesPerSegmentF=this.samplesPerSegment;
+            %tempSamplesPerSegment=round(this.measPar.SIRwindow*this.Fs);
+            
+            %t=1/this.Fs*(0:(tempSamplesPerSegment-1)).'; % reference to t=0 start time 
+            %this.samplesPerSegment=tempSamplesPerSegment;
+            %this=updateSamplesPerSegment(this);
+            %disable LTE channel state
+            tempLTEChstate=this.LTEChState;
+            this.LTEChState=false;
+            
+    
+            for IR=1:this.numRadarSignals
+                %first estimate noise power, needs pks and locs
+                [ this.radarSignal(IR),sigma_w2(IR,1),medianPeak(IR,1),noiseEst(:,IR),maxPeak(IR,1),maxPeakLoc(IR)]=...
+                    estimateRadarNoise(this.radarSignal(IR), this.Fs,this.SIRData(IR).original);
+                %currentRadarSeekPosisionSamples(IR)=getSeekPositionSamples(this.radarSignal(IR));         
+            end
+            
+            
+            %keep noise floor below KTB
+            noisePSD_dB=pow2db(sigma_w2./this.Fs);
+            noisePowAdjustfactor=ones(this.numRadarSignals,1);
+            noiseAdjustfactor_dB=this.P_KTB_dB-noisePSD_dB;
+            noisePowAdjustfactor(noiseAdjustfactor_dB<0)=db2pow(noiseAdjustfactor_dB(noiseAdjustfactor_dB<0));
+            noiseVolAdjustfactor=sqrt(noisePowAdjustfactor); % use this to make sure the noise floor is below KTB after adjustment
+            
+            peakPowerThreshold_dB=this.measPar.radarPeakPower_dBm-30;%-119 dB
+            MedianPeaksdB=pow2db(medianPeak.^2);
+            %MedianPeaksdB=MedianPeaksdB(isfinite(MedianPeaksdB));
+            MaxPeaksdB=pow2db(maxPeak.^2);
+            
+            rdrGains=sqrt(db2pow(peakPowerThreshold_dB-MaxPeaksdB));%%-pow2db(refLoad)));
+            if any(rdrGains>noiseVolAdjustfactor)
+            this.success.powerLevels='Radar noise floor may be above KTB';     
+            end
+            this.radarGain=rdrGains.';
+            
+            LTESeekPositionSamples=0;
+            tempSamplesPerSegment=round(this.numLTEwindows*this.measPar.SIRwindow*this.Fs);
+            t=1/this.Fs*(0:(tempSamplesPerSegment-1)).'; % exact time is not necessary here
+            for JL=1:this.numLTESignals
+                currentLTESeekPosisionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));
+                this.LTESignal(JL).samplesPerSegment=tempSamplesPerSegment;
+%                tl=(1/this.Fs)*(0:(tempSamplesPerSegment-1)).';
+                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  LTESeekPositionSamples);  
+                LTESignalData(:,JL) =readSamples(this.LTESignal(JL)).*exp(1i*2*pi*this.LTEFreqOffset(JL)*t);
+                LTEPowdB=pow2db((sum(abs(LTESignalData(:,JL)).^2)/tempSamplesPerSegment)/9);%/this.LTEBw); %%%%check this
+                %LTEBandPowdB=pow2db(dspFun.bandPowerC(LTESignalData(:,JL),Fs,[this.LTEFreqOffset(JL)-1e6,this.LTEFreqOffset(JL)+1e6]))
+                LTEdBLevel=this.measPar.LTEPower_dBm-30;
+                this.LTEGain(JL)=sqrt(db2pow(LTEdBLevel-LTEPowdB));
+                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  currentLTESeekPosisionSamples(JL));
+            end
+            
+           for JA=1:this.numABISignals
+               currentABISeekPosisionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
+                this.ABIGain(JA)=sqrt(db2pow(this.measPar.ABIAdjust_dB));
+                this.ABISignal(JA).samplesPerSegment=tempSamplesPerSegment;
+                ABISignalData(:,JA) =readSamples(this.ABISignal(JA)).*exp(1i*2*pi*this.ABIFreqOffset(JA)*t);
+                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
+           end
+           
+           for JR=1:this.numRadarSignals
+               currentradarSeekPosisionSamples(JR)=getSeekPositionSamples(this.radarSignal(JR));
+                this.radarSignal(JR)=setSeekPositionSamples(this.radarSignal(JR),  round((maxPeakLoc(JR)-this.measPar.SIRwindow/2)*this.Fs)); 
+                this.radarSignal(JR).samplesPerSegment=tempSamplesPerSegment;
+                radarSignalData(:,JR) =double(this.radarStatus(JR))*this.radarGain(JR)*readSamples(this.radarSignal(JR)).*exp(1i*2*pi*this.radarFreqOffset(JR)*t);
+                this.radarSignal(JR)=setSeekPositionSamples(this.radarSignal(JR),  currentradarSeekPosisionSamples(JR));
+           end
+           
+            AWGNVarF=db2pow(this.measPar.AWGNPSD_dBm-30)*this.Fs;
+            this.AWGNVar=double(this.AWGNStatus)*AWGNVarF;
+            WGN=sqrt(this.AWGNVar)*(randn(tempSamplesPerSegment,1)+1i*randn(tempSamplesPerSegment,1))/sqrt(2);
+            sigPInterf=sum(radarSignalData,2)+sum(double(this.LTEStatus).*this.LTEGain.*LTESignalData,2)...
+                +sum(double(this.ABIStatus).*this.ABIGain.*ABISignalData,2)+WGN;
+
+            minINT16=double(intmin('int16'));
+            maxINT16=double(intmax('int16'));
+            boundGuarddBMag=20;
+            minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
+            maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
+            scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
+            % round to lowest order of 10\times half number of integer digits
+            numDigits=numel(num2str(floor(scaleFactor)));
+            halfNumDigits=floor(numDigits/2);
+            scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
+            
+            %restore samples per segment value
+            this.samplesPerSegment=samplesPerSegmentF;
+            this=updateSamplesPerSegment(this);
+            %restore LTE channel state
+            this.LTEChState=tempLTEChstate;
+            %set gain value
+            %expects row vectors
+            this.writeScaleFactor=scaleFactor;    
+        end
+%%        
         function this=estimateGainsFromTargetSIR(this)
-%% test SIR set gains on waveform
+
             % estimate and set radarGain, LTEgain, ABIgain, and writeScaleFactor
             samplesPerSegmentF=this.samplesPerSegment;
             tempSamplesPerSegment=round(this.SIRData(1).window/(1/this.Fs));
             
             t=1/this.Fs*(0:(tempSamplesPerSegment-1)).'; % reference to t=0 start time 
             this.samplesPerSegment=tempSamplesPerSegment;
-            this=updateSamplesPerSegment(this);
+            %this=updateSamplesPerSegment(this);
             %disable LTE channel state
             tempLTEChstate=this.LTEChState;
             this.LTEChState=false;
@@ -723,7 +851,13 @@ classdef waveform %< threeGPPChannel
                 peakSeekPositionSamples(IR)=round((maxPeakLoc(IR)-this.SIRData(IR).window/2)/(1/this.Fs));
                 this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR), peakSeekPositionSamples(IR));
                 maxPeakSamples=readSamples(this.radarSignal(IR));
-                
+                %correct peak measuring location
+                [~,maxPeakIndx]=max(abs(maxPeakSamples));
+                maxPeakLocationAdjustmentSamples=round(tempSamplesPerSegment/2-maxPeakIndx);
+                peakSeekPositionSamples(IR)=peakSeekPositionSamples(IR)-maxPeakLocationAdjustmentSamples;
+                this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR), peakSeekPositionSamples(IR));
+                maxPeakSamples=readSamples(this.radarSignal(IR));
+                %[~,maxPeakIndx]=max(abs(maxPeakSamples))
 %                 [~,maxAccurateLocIndx(I)]=max(abs(maxPeakSamples));
 %                  peakAccurateSeekPositionSamples(I)=peakSeekPositionSamples(I)-((this.SIRData(I).window/2)/(1/this.Fs)-maxAccurateLocIndx(I));
 %                   this.radarSignal(I)=setSeekPositionSamples(this.radarSignal(I), peakAccurateSeekPositionSamples(I));
@@ -769,7 +903,7 @@ classdef waveform %< threeGPPChannel
 %                 this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
 %             end
 %             
-            P_KTB_dB=-174-30;
+            %this.P_KTB_dB=-174-30;
             peakPowerThreshold_dB=-89-30;%-119 dB
             
             noisePSD_dB=pow2db(sigma_w2./this.Fs);
@@ -777,25 +911,25 @@ classdef waveform %< threeGPPChannel
             
             
             noisePowAdjustfactor=ones(this.numRadarSignals,1);
-            noiseAdjustfactor_dB=P_KTB_dB-noisePSD_dB;
+            noiseAdjustfactor_dB=this.P_KTB_dB-noisePSD_dB;
             noisePowAdjustfactor(noiseAdjustfactor_dB<0)=db2pow(noiseAdjustfactor_dB(noiseAdjustfactor_dB<0));
             noiseVolAdjustfactor=sqrt(noisePowAdjustfactor);
-            peakPowAdjustfactor=db2pow(peakPowerThreshold_dB-medianPeakPowOrig_dB);
-            peakVolAdjustfactor=sqrt(peakPowAdjustfactor);
-            rdrGainLowUpVol=[peakVolAdjustfactor,noiseVolAdjustfactor];
+%             peakPowAdjustfactor=db2pow(peakPowerThreshold_dB-medianPeakPowOrig_dB);
+%             peakVolAdjustfactor=sqrt(peakPowAdjustfactor);
+%             rdrGainLowUpVol=[peakVolAdjustfactor,noiseVolAdjustfactor];
             
             % nedd to make sure that peakVolAdjustfactor<noiseVolAdjustfactor otherwise
             % either don't use this waveform or set it to noiseVolAdjustfactor
-            RDRSig=(rdrGainLowUpVol(:,2).').*radarSignalData;
+            %RDRSig=(noiseVolAdjustfactor.').*radarSignalData;
             
             %
-            dBMin=1;
-            dBMax=1;
+            dBMin=3;
+            dBMax=6;
             LTEBandwidth=10e6;
             %avrgLTEPSD=pow2db(mean(abs(LTESignalData).^2,1).'/LTEBandwidth);
             avrgLTEPSD=pow2db(max(mean(abs(LTESignalData).^2,1),[],3).'/LTEBandwidth);% mean of each LTE signal, min of each LTE signal relative to radar
             LTEGainsAboveKTB=randi([dBMin,dBMax],2,1);
-            LTEGainsPow=db2pow((P_KTB_dB+LTEGainsAboveKTB)-avrgLTEPSD);
+            LTEGainsPow=db2pow((this.P_KTB_dB+LTEGainsAboveKTB)-avrgLTEPSD);
             LTEGainsVol=sqrt(LTEGainsPow);
             % in case of LTEStatus is 0, check for inf and set the gain to zero
             LTEGainsVol(isinf(LTEGainsVol))=0; % gain for each LTE signal
@@ -811,43 +945,59 @@ classdef waveform %< threeGPPChannel
             %this needs to be corrected according to ADCscale (i.e. for each ADCscale the noise floor is the same)
             % should result to noise floor of ABI signals at KTB
             %ABIGainsVol=rdrGainLowUpVol(2,2)*ones(this.numABISignals,1);
-            ABIGainsVol=rdrGainLowUpVol(2,2)*double(this.ABIStatus).';
+            ABIGainsVol=noiseVolAdjustfactor(2)*double(this.ABIStatus).';
             ABISig=(ABIGainsVol.').*ABISignalData;
             
             % set awgn var at KTB
-            AWGNVarF=db2pow(P_KTB_dB)*this.Fs;
+            AWGNAboveKTB=5;
+            AWGNVarF=db2pow(this.P_KTB_dB+AWGNAboveKTB)*this.Fs;
             WGN=double(this.AWGNStatus)*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
             
             % first radar interf
-            yI=sum(LTESig(:,:,1),2)+sum(ABISig(:,:,1),2)+WGN;
+            %yI=sum(LTESig(:,:,1),2)+sum(ABISig(:,:,1),2)+WGN;
             
-            freqRange=[this.radarFreqOffset(1)-this.SIRData(1).Bw/2 this.radarFreqOffset(1)+this.SIRData(1).Bw/2];
-            GI=sqrt(max(abs(RDRSig(:,1)))^2/(SIRtargetNum*dspFun.bandPowerfiltC(yI,this.Fs,freqRange)));
-            
-            %yIGI=GI*yI;
-            GR2nd=ones(this.numRadarSignals,1);
-            %GR2nd=this.radarStatus.';
-            for I=2:this.numRadarSignals
-                yI2=sum(LTESig(:,:,I),2)+sum(ABISig(:,:,I),2)+WGN;
-                yIGI2=GI*yI2;
+            %freqRange=[this.radarFreqOffset(1)-this.SIRData(1).Bw/2 this.radarFreqOffset(1)+this.SIRData(1).Bw/2];
+%             GI=sqrt(max(abs(RDRSig(:,1)))^2/(SIRtargetNum*dspFun.bandPowerfiltC(yI,this.Fs,freqRange)));
+%             
+%             %yIGI=GI*yI;
+%             GR2nd=ones(this.numRadarSignals,1);
+%             %GR2nd=this.radarStatus.';
+%             for I=2:this.numRadarSignals
+%                 yI2=sum(LTESig(:,:,I),2)+sum(ABISig(:,:,I),2)+WGN;
+%                 yIGI2=GI*yI2;
+%                 freqRange=[this.radarFreqOffset(I)-this.SIRData(I).Bw/2 this.radarFreqOffset(I)+this.SIRData(I).Bw/2];
+%                 GR2nd(I)=double(this.radarStatus(I))*sqrt((SIRtargetNum*dspFun.bandPowerfiltC(RDRSig(:,1)+yIGI2,this.Fs,freqRange))/max(abs(RDRSig(:,I)))^2);
+%                 %GR2nd(I)=double(this.radarStatus(I))*sqrt((SIRtargetNum*dspFun.bandPowerfiltC(yIGI2,this.Fs,freqRange))/max(abs(RDRSig(:,I)))^2);
+%             end
+            for I=1:this.numRadarSignals
                 freqRange=[this.radarFreqOffset(I)-this.SIRData(I).Bw/2 this.radarFreqOffset(I)+this.SIRData(I).Bw/2];
-                GR2nd(I)=double(this.radarStatus(I))*sqrt((SIRtargetNum*dspFun.bandPowerfiltC(RDRSig(:,1)+yIGI2,this.Fs,freqRange))/max(abs(RDRSig(:,I)))^2);
+                yI=sum(LTESig(:,:,I),2)+sum(ABISig(:,:,I),2)+WGN;
+                Gr(I,1)=sqrt((SIRtargetNum*dspFun.bandPowerfiltC(yI,this.Fs,freqRange))/max(abs(radarSignalData(:,I)))^2);
             end
 
-            radarGainF=rdrGainLowUpVol(:,2).*GR2nd;
+%             radarGainF=noiseVolAdjustfactor.*GR2nd;
+%             radarGainF(isnan(radarGainF))=0;
+%             LTEGainF=GI*LTEGainsVol;
+%             LTEGainF(isnan(LTEGainF))=0;
+%             ABIGainF=GI*ABIGainsVol;
+%             ABIGainF(isnan(ABIGainF))=0;
+%             AWGNVarF=GI^2*AWGNVarF*this.AWGNStatus;
+%             AWGNVarF(isnan(AWGNVarF))=0;
+%             WGN=this.AWGNStatus*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
+            radarGainF=Gr;
             radarGainF(isnan(radarGainF))=0;
-            LTEGainF=GI*LTEGainsVol;
+            LTEGainF=LTEGainsVol;
             LTEGainF(isnan(LTEGainF))=0;
-            ABIGainF=GI*ABIGainsVol;
+            ABIGainF=ABIGainsVol;
             ABIGainF(isnan(ABIGainF))=0;
-            AWGNVarF=GI^2*AWGNVarF*this.AWGNStatus;
+            AWGNVarF=AWGNVarF*this.AWGNStatus;
             AWGNVarF(isnan(AWGNVarF))=0;
-            WGN=this.AWGNStatus*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
+            WGN=double(this.AWGNStatus)*sqrt(AWGNVarF)*(randn(this.samplesPerSegment,1)+1i*randn(this.samplesPerSegment,1))/sqrt(2);
            
             %sigPInterf1=RDRSig(:,1)+yIGI+GR2nd(2)*RDRSig(:,2);
             sigPInterf=sum((radarGainF.').*radarSignalData,2)+sum((LTEGainF.').*LTESignalData(:,:,1),2)+sum((ABIGainF.').*ABISignalData(:,:,1),2)+WGN; % this should be equal to sigPInterf
             %sum(sigPInterf-sigPInterf1)
-            
+            %scaling
 %             %scale by average PSD .e.g constant average psd
 %             avrgPSD=mean(abs(sigPInterf).^2)/this.Fs;
 %             constPSD=-130-30;
@@ -865,7 +1015,7 @@ classdef waveform %< threeGPPChannel
 %             disp(radarGainF)
 %             disp(medianPeak)
             constMultiply=sqrt(meadianPeakPowMinus89dBm);
-            radarGainF=constMultiply*radarGainF;
+            radarGainF=constMultiply*radarGainF; % need to check compare to noiseVolAdjustfactor, to make sure radar noisefoar is still below KTB
             LTEGainF=constMultiply*LTEGainF;
             ABIGainF=constMultiply*ABIGainF;
             AWGNVarF=constMultiply^2*AWGNVarF;
@@ -892,7 +1042,7 @@ classdef waveform %< threeGPPChannel
             this=setGainVar(this,radarGainF.',LTEGainF.',ABIGainF.',AWGNVarF);
             this.writeScaleFactor=scaleFactor;
         end
-        
+%%        
         function [perviewState, generationState]=isReady(this)
             pars=getWaveformInfo(this,'parameters');
             generationState=~any( structfun(@isempty, pars) );
@@ -906,7 +1056,7 @@ classdef waveform %< threeGPPChannel
             perviewStruct=cell2struct(fldValues',fldNames,1);
             perviewState=~any( structfun(@isempty, perviewStruct) );
         end
-        
+%%        
         function this=resetWaveformFiles(this)
             if ~isempty(this.waveformToFile)
                 this.waveformToFile=resetSignalToFile(this.waveformToFile);

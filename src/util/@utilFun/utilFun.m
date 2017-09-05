@@ -70,13 +70,15 @@ classdef utilFun
             jsonFilesCell=jsonFilesCell(1,:).';
             jsonFilesCellNoExt = cellfun(@(x) x(1:end-length('.json')), jsonFilesCell, 'un', 0);
             jsonFilesCellMap = cellfun(@(x) x(end-length('Map')+1:end), jsonFilesCellNoExt, 'un', 0) ;
+            datHasJSONIndx=0;
             for I=1:length(datFiles)
                 %if ~strcmp(jsonFiles(I).name(end-length('Map.json')+1:end-length('.json')),'Map')
                 datHasJSON=ismember(jsonFilesCellNoExt,datFiles(I).name(1:end-length('.dat')));
                 if  any(datHasJSON)
+                    datHasJSONIndx=datHasJSONIndx+1;
                     jsonText=fileread(fullfile(inputDir,char(jsonFilesCell(datHasJSON))));
-                    waveformStruct(I,1)=jsondecode(jsonText);
-                    waveformFilePath{I,1}=fullfile(inputDir,datFiles(I).name);
+                    waveformStruct(datHasJSONIndx,1)=jsondecode(jsonText);
+                    waveformFilePath{datHasJSONIndx,1}=fullfile(inputDir,datFiles(I).name);
                 end
             end
             dirHasJSONMap=ismember(jsonFilesCellMap,'Map');
