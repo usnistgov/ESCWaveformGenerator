@@ -23,8 +23,12 @@
             "PowerLevels_dBm":{
                 "Radar Peak Power":-89,
                 "LTE Power":-109,
-                "ABI Power":0,
+                "ABI Power":30,
                 "AWGN PSD":-165
+            },
+            "measParameters": {
+               "SIRWindow":10e-3,
+               "SIRBw":1e6
             },
             "Status": {
                 "Radar1": true,
@@ -63,9 +67,9 @@
                     "LTE2": ""
                 },
                 "Path":{
-                    "RadarDir": "",
-                    "LTEDir": "",
-                    "radarMetaFile": ""
+                    "RadarDir": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5",
+                    "LTEDir": "D:\\Spectrum-Share_Public\\LTESignals",
+                    "radarMetaFile": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5\\FileMeta.xlsx"
 			   }
             },
             "Destination": {

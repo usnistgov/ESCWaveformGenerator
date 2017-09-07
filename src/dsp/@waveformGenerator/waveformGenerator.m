@@ -237,8 +237,13 @@ classdef waveformGenerator<executor
                 this.waveformsMap{I}('ABIFreqOffset')=ABIFreqOffsetMat(I,:);
                 this.waveformsMap{I}('AWGNStatus')=genParameters.Signal.AWGNStatus;
                 this.waveformsMap{I}('AWGNVar')=genParameters.Signal.('AWGNVariance');% will be modified from gain estimation function;
-                this.waveformsMap{I}('writeScaleFactor')=genParameters.Signal.('WriteScaleFactor'); % will be modified from gain estimation function;
+                this.waveformsMap{I}('writeScaleFactor')=genParameters.Signal.('WriteScaleFactor'); % will be modified from gain estimation function;               
+                
+                this.waveformsMap{I}('gainEstimateMethod')=genParameters.Signal.GainMethod;
+                this.waveformsMap{I}('PowerLevels_dBm')=genParameters.Signal.PowerLevels_dBm;
                 this.waveformsMap{I}('targetSIR')=targetSIRMat(I);
+                this.waveformsMap{I}('measParameters')=genParameters.Signal.measParameters;
+                
                 this.waveformsMap{I}('waveformPath')=fullfile(genParameters.Signal.Destination.Path,...
                     strcat(genParameters.Signal.Destination.FileNamePrefix,sprintf(waveformFileNameFormat,I),'.dat'));
                 % select source files
@@ -292,7 +297,10 @@ classdef waveformGenerator<executor
                 waveformsObj(I).('AWGNStatus')=this.waveformsMap{I}('AWGNStatus');
                 waveformsObj(I).('AWGNVar')=this.waveformsMap{I}('AWGNVar');
                 waveformsObj(I).('writeScaleFactor')=this.waveformsMap{I}('writeScaleFactor');
+                waveformsObj(I).('gainEstimateMethod')=this.waveformsMap{I}('gainEstimateMethod');
+                waveformsObj(I).('PowerLevels_dBm')=this.waveformsMap{I}('PowerLevels_dBm');
                 waveformsObj(I).('targetSIR')=this.waveformsMap{I}('targetSIR');
+                waveformsObj(I).('measParameters')=this.waveformsMap{I}('measParameters');
                 % setup file sources is initiated in the generation process
                 % because parfor looses file ids
             end
@@ -323,7 +331,7 @@ classdef waveformGenerator<executor
                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
                 end
                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
-                waveformsObj(I)=estimateGainsFromTargetSIR(waveformsObj(I));
+                waveformsObj(I)=estimateGains(waveformsObj(I));
                 waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
             this=updateWaveformMapGains(this,waveformsObj);
@@ -364,7 +372,7 @@ classdef waveformGenerator<executor
                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
                 end
                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
-                waveformsObj(I)=estimateGainsFromTargetSIR(waveformsObj(I));
+                waveformsObj(I)=estimateGains(waveformsObj(I));
                 waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
             this=updateWaveformMapGains(this,waveformsObj);
