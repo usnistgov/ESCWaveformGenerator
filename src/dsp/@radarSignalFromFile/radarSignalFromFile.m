@@ -35,16 +35,6 @@ classdef radarSignalFromFile<signalFromFile
 %        radarSignalFromFileInfo
         radarInfoTable
     end
-%     properties (Access=private)
-%     IQDirectionNum
-%     end
-%     properties (Access=public)
-%         fileID
-%         samplesPerSegment
-%         IQDirection
-%         EOFAction % fills the remaining samples with zeros or Return zeros size samplesPerSegment(default): 'Rzeros', rewind to bof: 'Rewind', Return empty []: 'Rempty' 
-%         ERROR
-%     end
 
     properties(Constant)
 %    bytesPerSample=4;
