@@ -1,31 +1,8 @@
 classdef radarSignalFromFile<signalFromFile
-    %Radar Rsignal reader
-    %   Read binary data from measurement files
-    % Example usage:
-    %     Radar_info_file='metaFile.xlsx';
-    %     fileNo=1;
-    %     metaFilePath='metaFileDir';
-    %     radarMetaFile=fullfile(metaFilePath,Radar_info_file);
-    %     files_path='measFilesDir';
-    %     file_name='measFile.dat';
-    %     measFile=fullfile(files_path,file_name);
-    %
-    %     testwaveform=radarSignalFromFile(file_path_name,radar_meta_file);
-    %     testwaveform=readRadarMeta(testwaveform);
-    %
-    %     testwaveform=setRadarMeasFileNum(testwaveform,fileNo);
-    %     testwaveform=setreadScale(testwaveform);
-    %
-    %     testwaveform=initRadarFile(testwaveform);
-    %     seekPositionSamples=0;
-    %     testwaveform=setSeekPositionSamples(testwaveform,seekPositionSamples);
-    %     samplesPerSegment=180*1024;
-    %     testwaveform=setSamplesPerSegment(testwaveform,samplesPerSegment);
-    %     
-    %     testwaveform=readRadarMeasData(testwaveform);
-    %     testwaveform=seekNextPositionSamples(testwaveform);
-    %     measData=testwaveform.measData;
-
+    %Signal from file for radar files with meta data, i.e. readScale from sheet
+    % set read scale from meta file 
+    % estimate radar signal to noise ratio (require main sweep peak values)
+    %see also, signalFromFile 
     
     properties (Access=protected)
 %         readScale
@@ -46,35 +23,7 @@ classdef radarSignalFromFile<signalFromFile
     
     methods
         function this=radarSignalFromFile(InputFile,IQDirection,EOFAction,radarMetaFile)
-%                         switch nargin
-%                             case 0
-%                                 %set default IQ direction
-%                                 this.IQDirection='QI';
-%                                 %set default EOF action
-%                                 this.EOFAction='Rzeros';
-%                             case 1
-%                                 this.inputFile=InputFile;
-%                                 %set default IQ direction
-%                                 this.IQDirection='QI';
-%                                 %set default EOF action
-%                                 this.EOFAction='Rzeros';
-%                             case 2
-%                                 this.inputFile=InputFile;
-%                                 this.IQDirection=IQDirection;
-%                                 %set default EOF action
-%                                 this.EOFAction='Rzeros';
-%                             case 3
-%                                 this.inputFile=InputFile;
-%                                 this.IQDirection=IQDirection;
-%                                 this.EOFAction=EOFAction;
-%                             case 4
-%                                 this.inputFile=InputFile;
-%                                 this.IQDirection=IQDirection;
-%                                 this.EOFAction=EOFAction;
-%                                 this.radarMetaFile=radarMetaFile;
-%                                 this=readRadarMetaTable(this);
-%                         end
-            
+           
             switch nargin
                 case 0
                     supClassArgs={};
@@ -94,14 +43,7 @@ classdef radarSignalFromFile<signalFromFile
                     this=readRadarMetaTable(this);
             end
         end
-        
-
-
-        
-%         function this=setInputFile(this,inputFile)
-%             this.inputFile=inputFile;
-%         end
-%                 
+               
         function this=setRadarMetaFile(this,radarMetaFile)
             this.radarMetaFile=radarMetaFile;
             this=readRadarMetaTable(this);

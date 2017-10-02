@@ -1,7 +1,6 @@
 classdef executor
     %Organize parallel and sequential execution of tasks
-    %   Detailed explanation goes here
-    
+   
     properties
         numFiles
         useParallel            char

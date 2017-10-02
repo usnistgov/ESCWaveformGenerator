@@ -1,14 +1,14 @@
 classdef waveform 
     %waveform generator combines radar signal from file and LTE signal
     %  parameters:
-    %             Radar,LTE , and AWGN statuses
-    %             LTE channel state
-    %             freq offsets
-    %             additional gains
+    %             Radar,LTE , adjacent band interference (ABI), and AWGN
+    %             Status, Start time, Gain, freq offset 
+    %             LTE channel
+    %             gain estimate method: fixed power levels, target SIR
     % Two modes of operations:
     %                         Dynamic, generate a signal in segments
-    %                         Static, generate and save the signal
-    %   See also, signalFile, threeGPPChannel
+    %                         Static, generate full waveform and save it to a file
+    % See also, signalFromFile, radarSignalFromFile, signalToFile, threeGPPChannel
     
     properties
         Fs
@@ -144,17 +144,7 @@ classdef waveform
             
         end
 
-%         function pks=readPeaks(radarMeasFile)
-%             
-%             pksFileName=strcat(radarMeasFile(1:end-length('dec01.dat')),'pks.mat');
-%             if  (exist(pksFileName, 'file') == 2)
-%                 pks.original=load(pksFileName);
-%                 pks.Bw=2e6;
-%                 pks.window=1e-3;
-%             else
-%                 pks=[];
-%             end
-%         end
+
 %%        
         function this=setupABISignal(this,ABIMeasFiles,ABIMetaFile,ABIseekPositionSamples,readScale)
             IQDirection='QI';
@@ -331,15 +321,6 @@ classdef waveform
             LTESigsActive=any(this.LTEStatus);
             radarSigsActive=any(this.radarStatus);
             ABISigsActive=any(this.ABIStatus);
-%             for I=1:this.numLTESignals
-%                 this.LTESignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
-%             for I=1:this.numRadarSignals
-%                 this.radarSignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
-%             for I=1:this.numABISignals
-%                 this.ABISignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
             
             interfBndPowr=nan(this.numRadarSignals,1);
             
@@ -351,7 +332,6 @@ classdef waveform
                         LTESigFromFile=readSamples(this.LTESignal(I));
                         LTESigShifted=this.LTEGain(I)*(LTESigFromFile.*exp(1i*(2*pi*this.LTEFreqOffset(I))*t));
                         if this.LTEChState
-                            %LTESigCh(:,I)=step(this.LTECh(I).Ch,LTESigShifted);
                             LTESig(:,I)=this.LTEChannel.Ch{I}(LTESigShifted);
                         else
                             LTESig(:,I)=LTESigShifted;
@@ -507,17 +487,6 @@ classdef waveform
             LTESigsActive=any(this.LTEStatus);
             ABISigsActive=any(this.ABIStatus);
             radarSigsActive=any(this.radarStatus);
-%             for I=1:this.numLTESignals
-%                 this.LTESignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
-%             
-%             for I=1:this.numRadarSignals
-%                 this.radarSignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
-%             
-%             for I=1:this.numABISignals
-%                 this.ABISignal(I).samplesPerSegment=this.samplesPerSegment;
-%             end
             
             try
                 errmsg_process=[];

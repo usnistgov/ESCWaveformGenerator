@@ -1,6 +1,17 @@
 classdef signalToFile
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %Save signal to a file:
+    %              writeScale: sacle signal before saving
+    %              outputFile: output file name
+    % Example:
+    %     signalSeg1=sqrt(1e-5/2)complex(randn(1000,1),randn(1000,1));
+    %     signalSeg2=sqrt(1e-5/2)complex(randn(1000,1),randn(1000,1));
+    %     writeScaleFactor=1e5;
+    %     saveToFile=signalToFile('test','QI');
+    %     saveToFile=setWriteScale(saveToFile,writeScaleFactor);
+    %     saveToFile=initOutputFile(saveToFile);
+    %     writeSamples(saveToFile,signalSeg1); % write one segment to a file
+    %     writeSamples(saveToFile,signalSeg2); % write next segment to the same file
+    %     saveToFile=resetSignalToFile(saveToFile); % close opened file
     
     properties (Access=protected)
         writeScale
@@ -29,9 +40,6 @@ classdef signalToFile
         function this=signalToFile(OutputFile,outputIQDirection)
             switch nargin
                 case 0
-%                     this.signalToFileERROR.Initialization= MException('signalToFile:Initialization', ...
-%                         'Expected at least one input, got zero');
-%                     throw(this.signalToFileERROR.Initialization);
                     this.outputIQDirection='IQ'; %default
                 case 1
                     %set default IQ direction
@@ -63,14 +71,6 @@ classdef signalToFile
                 throw(this.signalToFileERROR.outputIQDirection);
             end
             
-%             switch this.outputIQDirection
-%                 case 'IQ'
-%                     % warning for 'a set method for a non dependent
-%                     % property..' is not an issue for this case
-%                     this.outputIQDirectionNum=[1 2];
-%                 case 'QI'
-%                     this.outputIQDirectionNum=[2 1];
-%             end
         end
         
         function this=initOutputFile(this)
@@ -91,8 +91,6 @@ classdef signalToFile
         end
         
         function writeSamples(this,signalIn)
-            %whos signalIn
-            %disp(str2double(this.outputIQDirectionNum))
             dataOut(:,this.outputIQDirectionNum(1))=real(signalIn*this.writeScale); %simple scaling
             dataOut(:,this.outputIQDirectionNum(2))=imag(signalIn*this.writeScale); %simple scaling
             dataOutInterleaved=reshape(dataOut.',[],1);

@@ -6,7 +6,7 @@ classdef signalFromFile
     %     file_name='measFile.dat';
     %     measFile=fullfile(files_path,file_name);
     %
-    %     testwaveform=signalFromFile(measFile);
+    %     testwaveform=signalFromFile(measFile,'IQ');
     %     testwaveform=setreadScale(testwaveform,1);
     %     testwaveform=initInputFile(testwaveform);
     %     seekPositionSamples=0;
@@ -14,9 +14,11 @@ classdef signalFromFile
     %     samplesPerSegment=50e3;
     %     testwaveform=setSamplesPerSegment(testwaveform,samplesPerSegment);
     %     ------
-    %     measData=readSamples(testwaveform);
-    %     testwaveform=seekNextPositionSamples(testwaveform);    
+    %     measData1=readSamples(testwaveform);
+    %     testwaveform=seekNextPositionSamples(testwaveform);  
+    %     measData2=readSamples(testwaveform);
     %     -------
+    %     testwaveform=resetSignalFromFile(testwaveform); % close opened file
 
     
     properties (Access=protected)
@@ -70,12 +72,6 @@ classdef signalFromFile
                     this.inputFile=InputFile;
                     this.inputIQDirection=inputIQDirection;
                     this.EOFAction=EOFAction;
-%                 case 4
-%                     this.inputFileName=InputFileName;
-%                     this.inputIQDirection=inputIQDirection;
-%                     this.EOFAction=EOFAction;
-%                     this.radarMetaFile=radarMetaFile;
-%                     this=readRadarMetaTable(this);
             end
 
             
@@ -88,11 +84,6 @@ classdef signalFromFile
             this.inputFile=InputFile;
         end
                 
-%         function this=setRadarMetaFile(this,radarMetaFile)
-%             this.radarMetaFile=radarMetaFile;
-%             this=readRadarMetaTable(this);
-%         end
-        
         
         function this=setSeekPositionSamples(this,seekPositionSamples)
             this.seekPositionSamples=seekPositionSamples;
@@ -137,19 +128,7 @@ classdef signalFromFile
         end
 
          function this=setReadScale(this,readScale)
-%              if nargin<2
-%                  if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
-%                      [~,FileName,FileExt] = fileparts(this.inputFile);
-%                      this.readScale=this.radarInfoTable.ADCScaleFactor(ismember(this.radarInfoTable.FileName,[FileName,FileExt]))/this.combinedFrontEndGain;
-%                     % disp(num2str(this.radarInfoTable.ADCScaleFactor(ismember(this.radarInfoTable.FileName,[FileName,FileExt]))))
-%                  else
-%                      this.ERROR.setReadScale= MException('signalFromFile:RadarMeta', ...
-%                                 'No appropriate radar meta data found');
-%                      throw(this.ERROR.setReadScale);
-%                  end
-%              else
                  this.readScale=readScale;
-%              end
          end
          
          function seekPositionSamples=getSeekPositionSamples(this)
@@ -160,18 +139,9 @@ classdef signalFromFile
         function signalFromFileInfo=getSignalInfo(this)
         signalFromFileInfo.readScale=this.readScale;
         signalFromFileInfo.inputFile=this.inputFile;
-%        signalFromFileInfo.radarMetaFile=this.radarMetaFile;
         signalFromFileInfo.inputFileID=this.inputFileID;
         signalFromFileInfo.seekPositionSamples=this.seekPositionSamples;
         signalFromFileInfo.samplesPerSegment=this.samplesPerSegment;
-%         if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
-%             [~,FileName,FileExt] = fileparts(this.inputFile);
-%             logicalIndex=ismember(this.radarInfoTable.FileName,[FileName,FileExt]);
-%             signalFromFileInfo.radarFileIndex=find(logicalIndex);
-%             signalFromFileInfo.radarInfoTable=this.radarInfoTable(logicalIndex,:);
-%         else
-%             signalFromFileInfo.radarInfoTable=[];
-%         end
         end
         
         function signalTime=getSignalTime(this,Fs)
@@ -186,17 +156,6 @@ classdef signalFromFile
             end
         
         end
-        
-        
-%          function this=readRadarMetaTable(this)
-%             %% Import the data
-%             if exist(this.radarMetaFile, 'file') == 2
-%                 %MSGID='MATLAB:table:ModifiedAndSavedVarnames';warning('off', MSGID);
-%                 this.radarInfoTable=readtable(this.radarMetaFile);
-%             else
-%              this.radarInfoTable=[];   
-%             end
-%         end
         
         function this=initInputFile(this)
             %errmsg = '';
@@ -264,11 +223,8 @@ classdef signalFromFile
               
             end
             DataIQ=reshape(Data_Vec_Interleaved.',2,[]).';
-            %clear Data_Vec_Interleaved
-            % Note I&Q are switched in the radar meas files
+            % Note I&Q are switched in some radar meas files
             Data_Vector_c=complex(DataIQ(:,this.inputIQDirectionNum(1)),DataIQ(:,this.inputIQDirectionNum(2)));
-            %clear DataIQ
-
             samplesData=Data_Vector_c*this.readScale;
         end
         
@@ -276,23 +232,6 @@ classdef signalFromFile
                 this.seekPositionSamples=this.seekPositionSamples+this.samplesPerSegment;  
         end
         
-%         function [this,sigmaW2,medianPeak,noiseEst,maxPeak,maxPeakLoc]=estimateRadarNoise(this,Fs,peakFilePath)
-%             segTime=0.8e-3;
-%             advancefromPeak=0.05e-3;
-%             pks=load(peakFilePath);
-%             [maxPeak,maxPeakLocIndx]=max(pks.pks);
-%             medianPeak=median(pks.pks,'omitnan');
-%             samplesPerSegmentTemp=this.samplesPerSegment;
-%             seekPositionSamplesTemp=this.seekPositionSamples;
-%             this.samplesPerSegment=round(segTime/(1/Fs));
-%             maxPeakLoc=pks.locs(maxPeakLocIndx);
-%             seekTime=maxPeakLoc+advancefromPeak;
-%             this=setSeekPositionSamples(this,round(seekTime/(1/Fs)));
-%             noiseEst =readMeasData(this);
-%             sigmaW2=sum(abs(noiseEst).^2)/length(noiseEst);
-%             this.samplesPerSegment=samplesPerSegmentTemp;
-%             this.seekPositionSamples=seekPositionSamplesTemp;
-%         end
         
         function this=resetSignalFromFile(this)
             if this.inputFileID~= -1
