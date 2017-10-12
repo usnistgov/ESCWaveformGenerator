@@ -81,7 +81,7 @@ classdef signalToFile
                             case 'QI'
                                 this.outputIQDirectionNum=[2 1];
                         end
-            [SaveSignalFileId,errmsg_write]=fopen(this.outputFile,'W','l','UTF-8');
+            [SaveSignalFileId,errmsg_write]=fopen(this.outputFile,'w','l','UTF-8');
             if isempty(errmsg_write)
                 this.outputFileID=SaveSignalFileId;
 %                this.fileName=this.outputFile;

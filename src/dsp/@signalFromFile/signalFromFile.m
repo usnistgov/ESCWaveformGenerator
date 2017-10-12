@@ -147,7 +147,7 @@ classdef signalFromFile
         function signalTime=getSignalTime(this,Fs)
             if ~isempty(this.inputFile)
                  fInfo=dir(this.inputFile);
-                 signalTime.totalNumberOfSamples=fInfo.bytes/this.bytesPerSample;
+                 signalTime.totalNumberOfSamples=round(fInfo.bytes/this.bytesPerSample);
                  if nargin >1
                  signalTime.timeSec=signalTime.totalNumberOfSamples*1/Fs;
                  end

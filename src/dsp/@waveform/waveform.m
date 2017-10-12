@@ -41,7 +41,7 @@ classdef waveform
         %        saveWaveformFileId
         waveformToFile       signalToFile
         success
-        gainEstimateMethod  char
+        gainEstimateMethod   char
         PowerLevels_dBm      struct
         targetSIR
         measParameters       struct        
@@ -426,6 +426,8 @@ classdef waveform
             
             if   ~isempty(this.SIRData) && isfield(this.SIRData,'original')
                 calculateSIRFlag=true;
+            else
+                calculateSIRFlag=false;
             end
             
             if calculateSIRFlag

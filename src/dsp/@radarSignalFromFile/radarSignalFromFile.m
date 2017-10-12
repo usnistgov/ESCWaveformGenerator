@@ -84,18 +84,18 @@ classdef radarSignalFromFile<signalFromFile
         end
         end
         
-        function signalTime=getSignalTime(this,Fs)
-            if ~isempty(this.inputFile)
-                 fInfo=dir(this.inputFile);
-                 signalTime.totalNumberOfSamples=fInfo.bytes/this.bytesPerSample;
-                 if nargin >1
-                 signalTime.timeSec=signalTime.totalNumberOfSamples*1/Fs;
-                 end
-            else
-                signalTime=[];
-            end
-        
-        end
+%         function signalTime=getSignalTime(this,Fs)
+%             if ~isempty(this.inputFile)
+%                  fInfo=dir(this.inputFile);
+%                  signalTime.totalNumberOfSamples=fInfo.bytes/this.bytesPerSample;
+%                  if nargin >1
+%                  signalTime.timeSec=signalTime.totalNumberOfSamples*1/Fs;
+%                  end
+%             else
+%                 signalTime=[];
+%             end
+%         
+%         end
         
         
          function this=readRadarMetaTable(this)

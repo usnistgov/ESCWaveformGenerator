@@ -67,13 +67,21 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
                          this.samplesPerSegment=leftOverSamples;
                      end
                      sigMeas =readSamples(this);
+                     
                      t=((0:this.samplesPerSegment-1).')*(1/this.oldFs)+t0;
                      this=seekNextPositionSamples(this);
                      sigMeasShifted=sigMeas.*exp(-1i*2*pi*(this.freqShift)*t);
                      [sigResampled,~]=dspFun.resampleFilt(sigMeasShifted,this.oldFs,this.newFs,filterRESET,this.filterSpec);
                      writeSamples(this,sigResampled);
                      t0=t(end)+1/this.oldFs;
+                     
+                     testVar(I,1)=length(sigMeas);
+                     testVar(I,2)=length(t);
+                     testVar(I,3)=length(sigMeasShifted);
+                     testVar(I,4)=length(sigResampled);
                  end
+                 save([this.outputFile,'Vars.mat'],'testVar','signalTime','numOfSegments','numOfSegmentsWithLeftOver',...
+                     'leftOverSamples');
         end
         function this=resetSignalDecimator(this)
             this=resetSignalFromFile(this);
