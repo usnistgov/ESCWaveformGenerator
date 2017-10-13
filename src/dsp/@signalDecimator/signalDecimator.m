@@ -27,7 +27,9 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
     methods
         function this=signalDecimator(inputFile,outputFile,oldFs,newFs,freqShift,filterSpec)
             this.inputFile=inputFile;
+            
             this.outputFile=outputFile;
+            
             this.oldFs=oldFs;
             this.newFs=newFs;
             this.freqShift=freqShift;
@@ -75,13 +77,13 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
                      writeSamples(this,sigResampled);
                      t0=t(end)+1/this.oldFs;
                      
-                     testVar(I,1)=length(sigMeas);
-                     testVar(I,2)=length(t);
-                     testVar(I,3)=length(sigMeasShifted);
-                     testVar(I,4)=length(sigResampled);
+%                      testVar(I,1)=length(sigMeas);
+%                      testVar(I,2)=length(t);
+%                      testVar(I,3)=length(sigMeasShifted);
+%                      testVar(I,4)=length(sigResampled);
                  end
-                 save([this.outputFile,'Vars.mat'],'testVar','signalTime','numOfSegments','numOfSegmentsWithLeftOver',...
-                     'leftOverSamples');
+%                  save([this.outputFile,'Vars.mat'],'testVar','signalTime','numOfSegments','numOfSegmentsWithLeftOver',...
+%                      'leftOverSamples');
         end
         function this=resetSignalDecimator(this)
             this=resetSignalFromFile(this);

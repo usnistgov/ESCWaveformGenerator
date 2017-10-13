@@ -671,6 +671,19 @@ classdef waveform
                         'Only valid options are:Power Levels, Target SIR');
             end
         end
+        
+        function scaleFactor=estimateScaleFactor(sigPInterf)
+            minINT16=double(intmin('int16'));
+            maxINT16=double(intmax('int16'));
+            boundGuarddBMag=20;
+            minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
+            maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
+            scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
+            % round to lowest order of 10\times half number of integer digits
+            numDigits=numel(num2str(floor(scaleFactor)));
+            halfNumDigits=floor(numDigits/2);
+            scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
+        end
             
 %%        
         function this=setPowerLevels(this)
@@ -751,17 +764,17 @@ classdef waveform
             WGN=sqrt(this.AWGNVar)*(randn(tempSamplesPerSegment,1)+1i*randn(tempSamplesPerSegment,1))/sqrt(2);
             sigPInterf=sum(radarSignalData,2)+sum(double(this.LTEStatus).*this.LTEGain.*LTESignalData,2)...
                 +sum(double(this.ABIStatus).*this.ABIGain.*ABISignalData,2)+WGN;
-
-            minINT16=double(intmin('int16'));
-            maxINT16=double(intmax('int16'));
-            boundGuarddBMag=20;
-            minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
-            maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
-            scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
-            % round to lowest order of 10\times half number of integer digits
-            numDigits=numel(num2str(floor(scaleFactor)));
-            halfNumDigits=floor(numDigits/2);
-            scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
+              scaleFactor=estimateScaleFactor(sigPInterf);
+%             minINT16=double(intmin('int16'));
+%             maxINT16=double(intmax('int16'));
+%             boundGuarddBMag=20;
+%             minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
+%             maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
+%             scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
+%             % round to lowest order of 10\times half number of integer digits
+%             numDigits=numel(num2str(floor(scaleFactor)));
+%             halfNumDigits=floor(numDigits/2);
+%             scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
             
             %restore samples per segment value
             this.samplesPerSegment=samplesPerSegmentF;
@@ -995,17 +1008,18 @@ classdef waveform
             ABIGainF=constMultiply*ABIGainF;
             AWGNVarF=constMultiply^2*AWGNVarF;
             sigPInterf=constMultiply*sigPInterf;
-
-            minINT16=double(intmin('int16'));
-            maxINT16=double(intmax('int16'));
-            boundGuarddBMag=20;
-            minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
-            maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
-            scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
-            % round to lowest order of 10\times half number of integer digits
-            numDigits=numel(num2str(floor(scaleFactor)));
-            halfNumDigits=floor(numDigits/2);
-            scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
+            
+            scaleFactor=estimateScaleFactor(sigPInterf);
+%             minINT16=double(intmin('int16'));
+%             maxINT16=double(intmax('int16'));
+%             boundGuarddBMag=20;
+%             minData=min(min(real(sigPInterf),min(imag(sigPInterf))));
+%             maxData=max(max(real(sigPInterf),max(imag(sigPInterf))));
+%             scaleFactor=min(maxINT16/(maxData*db2mag(boundGuarddBMag)),minINT16/(minData*db2mag(boundGuarddBMag)));
+%             % round to lowest order of 10\times half number of integer digits
+%             numDigits=numel(num2str(floor(scaleFactor)));
+%             halfNumDigits=floor(numDigits/2);
+%             scaleFactor=floor(scaleFactor/(10^halfNumDigits))*(10^halfNumDigits);
             
             %restore samples per segment value
             this.samplesPerSegment=samplesPerSegmentF;
