@@ -1,3 +1,35 @@
+...%% Legal Disclaimer
+...% NIST-developed software is provided by NIST as a public service. 
+...% You may use, copy and distribute copies of the software in any medium,
+...% provided that you keep intact this entire notice. You may improve,
+...% modify and create derivative works of the software or any portion of
+...% the software, and you may copy and distribute such modifications or
+...% works. Modified works should carry a notice stating that you changed
+...% the software and should note the date and nature of any such change.
+...% Please explicitly acknowledge the National Institute of Standards and
+...% Technology as the source of the software.
+...% 
+...% NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+...% WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT OR ARISING BY
+...% OPERATION OF LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY
+...% OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT
+...% AND DATA ACCURACY. NIST NEITHER REPRESENTS NOR WARRANTS THAT THE
+...% OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE, OR
+...% THAT ANY DEFECTS WILL BE CORRECTED. NIST DOES NOT WARRANT OR MAKE ANY 
+...% REPRESENTATIONS REGARDING THE USE OF THE SOFTWARE OR THE RESULTS 
+...% THEREOF, INCLUDING BUT NOT LIMITED TO THE CORRECTNESS, ACCURACY,
+...% RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+...% 
+...% You are solely responsible for determining the appropriateness of
+...% using and distributing the software and you assume all risks
+...% associated with its use, including but not limited to the risks and
+...% costs of program errors, compliance with applicable laws, damage to 
+...% or loss of data, programs or equipment, and the unavailability or
+...% interruption of operation. This software is not intended to be used in
+...% any situation where a failure could cause risk of injury or damage to
+...% property. The software developed by NIST employees is not subject to
+...% copyright protection within the United States.
+
 classdef decimationExecutor<executor
     %Execute multiple signals using signalDecimator
     %Example:
@@ -21,12 +53,11 @@ classdef decimationExecutor<executor
     
     properties
         signals               signalDecimator
-        % numFiles
         inputFiles            cell
         outputFiles           cell
         freqShifts
-        %        decimationExecutorERROR
     end
+    
     properties(Constant)
         samplesPerSegment=144e4;
         initialSeekSamples=0;
@@ -74,10 +105,10 @@ classdef decimationExecutor<executor
     methods
         function  this=decimationExecutor(numFiles)
             this=this@executor(numFiles);
-            %this.numFiles=numFiles;
         end
 
         function signalDecimators=setupDecimators(this)
+            %creates an array of signalDecimator instances 
             for I=1:this.numFiles
                 signalDecimators(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
                 signalDecimators(I).samplesPerSegment=this.samplesPerSegment;
@@ -85,7 +116,6 @@ classdef decimationExecutor<executor
         end
         
         function this=set.inputFiles(this,inputFiles)
-            
             if this.numFiles==length(inputFiles)
                 this.inputFiles=inputFiles;
             else
@@ -114,24 +144,7 @@ classdef decimationExecutor<executor
                 throw(this.ERROR.outputFiles);
             end
         end
-        
-        %         function this=executeSequential(this)
-        %             %generate signals sequentially
-        %             %signalInst=nan(this.numFiles,1);
-        %             try
-        %                 for I=1:this.numFiles
-        %                     %                     signalInst(I)=initdecimationExecutor(this,I);
-        %                     %                     signalInst(I)=decimateFile(signalInst(I));
-        %                     this.signals(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
-        %                     this.signals(I)=initDecimator(this.signals(I),this.initialSeekSamples,this.samplesPerSegment);
-        %                     this.signals(I)=decimateFile(this.signals(I));
-        %                 end
-        %                 %this.signals=signalInst;
-        %             catch ME
-        %                 this.ERROR.executeSequential=ME;
-        %             end
-        %         end
-        
+
         function this=executeSequential(this)
             %generate signals sequentially
             try
@@ -139,7 +152,7 @@ classdef decimationExecutor<executor
                 for I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
-                    %signalDecimators(I)=resetSignalDecimator(signalDecimators(I));
+                    signalDecimators(I)=resetSignalDecimator(signalDecimators(I)); 
                 end
                 this.signals=signalDecimators;
             catch ME
@@ -154,50 +167,14 @@ classdef decimationExecutor<executor
                 parfor  I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
-                    %signalDecimators(I)=resetSignalDecimator(signalDecimators(I));
+                    signalDecimators(I)=resetSignalDecimator(signalDecimators(I)); 
                 end
                 this.signals=signalDecimators;
             catch ME
                 this.ERROR.executeParallel=ME;
             end
         end
-        
-        %         function this=executeParallel(this)
-        %
-        %             try
-        %                 %                 for I=1:this.numFiles
-        %                 %                     %                                     signalInst=signalDecimator(this.inputFiles{signalNumber},this.outputFiles{signalNumber},this.oldFs,this.newFs,this.freqShifts(signalNumber),this.filterSpec);
-        %                 %                     signalInst(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
-        %                 %                     signalInst(I)=initDecimator(signalInst(I),this.initialSeekSamples,this.samplesPerSegment);
-        %                 %                     % signalInst(I)=decimateFile(signalInst(I));
-        %                 %                 end
-        %                 %                 this.signals=signalInst;
-        %                 % wrapper = WorkerObjWrapper(this)
-        %                 inputFilesInst=this.inputFiles;
-        %                 outputFilesInst=this.outputFiles;
-        %                 freqShiftsInst=this.freqShifts;
-        %                 oldFsInst=this.oldFs;
-        %                 newFsInst=this.newFs;
-        %                 filterSpecInst=this.filterSpec;
-        %                 initialSeekSamplesInst=this.initialSeekSamples;
-        %                 samplesPerSegmentInst=this.samplesPerSegment;
-        %                 parfor  I=1:this.numFiles
-        %                     %disp(wrapper.Value)
-        %                     %                parfor I=1:this.numFiles
-        %                     %                  disp(char(this.outputFiles))
-        %                     %                  disp(char(this.inputFiles))
-        %                     %  signalInst{I}=startdecimationExecutor(signalInst(I))
-        %                     signalInst(I)=signalDecimator(inputFilesInst{I},outputFilesInst{I},oldFsInst,newFsInst,freqShiftsInst(I),filterSpecInst);
-        %                     signalInst(I)=initDecimator(signalInst(I),initialSeekSamplesInst,samplesPerSegmentInst);
-        %                     signalInst(I)=decimateFile(signalInst(I));
-        %                 end
-        %                 this.signals=signalInst;
-        %             catch ME
-        %                 this.ERROR.executeParallel=ME;
-        %             end
-        %             %foo@Super(obj);
-        %         end
-        
+
     end
     
 end
