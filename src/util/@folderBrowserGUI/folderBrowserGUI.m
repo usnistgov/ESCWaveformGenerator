@@ -1,6 +1,13 @@
 classdef folderBrowserGUI < matlab.apps.AppBase
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
+    %Folder browser GUI with sort numbered files
+    %   Example usage:
+    %             dialogText='Select waveforms folder';
+    %             defaultExt='dat';
+    %             defaultDir='C:\'
+    %             folderBrowser=folderBrowserGUI(defaultDir,dialogText,defaultExt)
+    %             folderBrowser=SelectFolder(folderBrowser,SomeUIFig);
+    %             waveformNames=getFileNames(folderBrowser,'withext');
+    %             waveformPaths=getFullFileNamesWithPath(folderBrowser,'withext');
     
     properties (Access=protected)
         defaultDir
@@ -40,7 +47,9 @@ classdef folderBrowserGUI < matlab.apps.AppBase
             fileNames=folderBrowser.fileNames;
             
         end
-
+        function directoryName=getCurrentDir(folderBrowser)
+            directoryName=folderBrowser.directoryName;
+        end
         function fullFileNames=getFullFileNamesWithPath(folderBrowser,ext)
             % return cell arry of file names with paths
             if nargin > 1 && strcmp(ext,'withoutext')
@@ -65,29 +74,20 @@ classdef folderBrowserGUI < matlab.apps.AppBase
                     if nargin > 1
                         uialert(UIFigure,folderBrowser.directoryName,['No ', folderBrowser.defaultExt,' files found in']);
                     end
-                    return;
+                    %return;
                 else
                     for f_in=1:length(dr)
                         file_name_cell{f_in}= dr(f_in).name;
                     end
    
-                    folderBrowser.fileNames=sortByNunbers(file_name_cell.');
+                    folderBrowser.fileNames=utilFun.sortByNunbers(file_name_cell.');
                     
                 end
-
+            else
+                    folderBrowser.fileNames=[];
             end
         end
         
         end
 
-end
-
-function sortedCell=sortByNunbers(unsortedCell)
-digits=regexp(unsortedCell,'\d');
-values=zeros(length(unsortedCell),1);
-for I=1:length(unsortedCell)
-    values(I)=str2double(unsortedCell{I}(digits{I}));
-end
-[~,I]=sort(values);
-sortedCell=unsortedCell(I);
 end

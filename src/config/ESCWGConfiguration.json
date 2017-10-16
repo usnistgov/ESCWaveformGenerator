@@ -1,0 +1,165 @@
+{
+	"Parameters": {
+		"Description": "ESC test waveforms. Set configuration parameters for radar and LTE",
+		"Notes": "1. backslash in directories needs to be escaped with a second backslash",
+		"Signal": {
+			"Fs": 25e6,
+            "Total Process Time": 90,
+            "Short File": false,
+            "Target SIR": 30,
+            "Segment Process Time": 0.5,
+            "AWGN Status": false,
+            "AWGN Variance": 1e-9,
+            "Write Scale Factor": 1e6,
+            "Manual Radar Read Scale": false,
+            "Radar Read Scale": 1e-7,
+            "LTE Read Scale Factor": 1e-5,
+            "LTE Channel Status": true,
+            "LTE Channel Type": {
+                   "LTE1": "EPA5Hz",
+                   "LTE2": "EVA5Hz"
+            },
+            "Gain Method": "Power Levels",
+            "PowerLevels_dBm":{
+                "Radar Peak Power":-89,
+                "LTE Power":-109,
+                "ABI Power":30,
+                "AWGN PSD":-165
+            },
+            "measParameters": {
+               "SIRWindow":10e-3,
+               "SIRBw":1e6
+            },
+            "Status": {
+                "Radar1": true,
+                "Radar2": false,
+                "ABI": false,
+                "LTE1": true,
+                "LTE2": true
+            },
+            "Frequency Offset": {
+                "Radar1": 0.0,
+                "Radar2": 10e6,
+                "ABI": 0.0,
+                "LTE1": -5e6,
+                "LTE2": 5e6
+            },
+            "Gain": {
+                "Radar1": 1,
+                "Radar2": 1,
+                "ABI": 1,
+                "LTE1": 1e-3,
+                "LTE2": 1e-3
+            },
+            "StartTime": {
+                "Radar1": 4,
+                "Radar2": 6,
+                "ABI": 0,
+                "LTE1": 0,
+                "LTE2": 0
+            },
+            "Source": {
+                "File": {
+                    "Radar1": "",
+                    "Radar2": "",
+                    "ABI": "",
+                    "LTE1": "",
+                    "LTE2": ""
+                },
+                "Path":{
+                    "RadarDir": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5",
+                    "LTEDir": "D:\\Spectrum-Share_Public\\LTESignals",
+                    "radarMetaFile": "D:\\Spectrum-Share\\NASCTN 3.5 GHz San Diego Release - Decimated & Shifted - v5\\FileMeta.xlsx"
+			   }
+            },
+            "Destination": {
+                "WaveformFile": "",
+                "File Name Prefix": "testRadarWaveform",
+                "Path": "D:\\Spectrum-Share\\SanDiegoMixedWaveformsTestV2"
+            }
+		},
+		"Preview": {
+			"Total Preview Time": 1,
+			"Segment Preview Time": 0.00131072,
+			"Forward": {
+                "Radar1": 1.36,
+                "Radar2": 2,
+                "ABI": 40,
+                "LTE1": 0,
+                "LTE2": 0
+            }
+		},
+        "SignalMulti": {
+            "Number Of Files": 120,
+            "Use Parallel": "On",
+            "Number Of Workers": 20,
+            "Method": {
+                "Radar1 Start Time": "Random",
+                "Radar2 Start Time": "Random",
+                "ABI Start Time": "Fix",
+                "Radar1 Frequency": "Vary",
+                "Radar2 Frequency": "Vary",
+                "ABI Frequency": "Fix",
+                "Target SIR": "Fix",
+                "LTE Channel Type": "Fix"
+            },
+            "Bounds": {
+                "Radar1 Start Time": [4,30],
+                "Radar2 Start Time": [4,30],
+                "ABI Start Time": [4,30],
+                "Radar1 Frequency": [-0.1e6,0.1e6],
+                "Radar2 Frequency": [9.9e6,10.1e6],
+                "ABI Frequency": [-5e6,5e6],
+                "Target SIR": [0,50]
+            },
+            "Step": {
+                "Radar1 Start Time": 1,
+                "Radar2 Start Time": 1,
+                "ABI Start Time": 1,
+                "Radar1 Frequency": 10e3,
+                "Radar2 Frequency": 10e3,
+                "ABI Frequency": 10e3,
+                "Target SIR": 2
+            }
+        },
+		"Spectrum Analyzer": {
+            "SpectrumType": "Power density",
+            "ViewType": "Spectrum",
+			"FrequencyResolutionMethod": "WindowLength",
+			"FFTLengthSource": "Property",
+			"FFTLength": 1024,
+			"WindowLength": 1024,
+			"PowerUnits": "dBm",
+            "ReferenceLoad": 50,
+			"Position": [749,227,976,721],
+			"YLimits": [-150,-50],
+			"PlotMaxHoldTrace": true,
+			"SpectralAverages": 32,
+			"OverlapPercent": 1,
+			"Window": "Hann"
+		},
+		"Spectrogram": {
+            "SpectrumType": "Power density",
+            "ViewType": "Spectrogram",
+            "SpectrumUnits": "dBm",
+			"FrequencyResolutionMethod": "WindowLength",
+			"FFTLengthSource": "Property",
+			"FFTLength": 256,
+			"WindowLength": 256,
+            "TimeResolutionSource":"Property",
+            "ReferenceLoad": 50,
+            "TimeResolution": 1e-3,
+			"Position": [749,227,976,721],
+			"Window": "Hann"
+		},
+		"Time Scope": {
+			"ShowGrid": true,
+            "TimeSpan": 10e-3,
+            "TimeSpanOverrunAction": "Scroll",
+            "BufferLength": 250000,
+            "MaximizeAxes": "Auto",
+            "YLimits": [0,10e-6]
+
+		}
+	}
+}
