@@ -21,12 +21,11 @@ classdef decimationExecutor<executor
     
     properties
         signals               signalDecimator
-        % numFiles
         inputFiles            cell
         outputFiles           cell
         freqShifts
-        %        decimationExecutorERROR
     end
+    
     properties(Constant)
         samplesPerSegment=144e4;
         initialSeekSamples=0;
@@ -74,10 +73,10 @@ classdef decimationExecutor<executor
     methods
         function  this=decimationExecutor(numFiles)
             this=this@executor(numFiles);
-            %this.numFiles=numFiles;
         end
 
         function signalDecimators=setupDecimators(this)
+            %creates an array of signalDecimator instances 
             for I=1:this.numFiles
                 signalDecimators(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
                 signalDecimators(I).samplesPerSegment=this.samplesPerSegment;
@@ -85,7 +84,6 @@ classdef decimationExecutor<executor
         end
         
         function this=set.inputFiles(this,inputFiles)
-            
             if this.numFiles==length(inputFiles)
                 this.inputFiles=inputFiles;
             else
@@ -114,24 +112,7 @@ classdef decimationExecutor<executor
                 throw(this.ERROR.outputFiles);
             end
         end
-        
-        %         function this=executeSequential(this)
-        %             %generate signals sequentially
-        %             %signalInst=nan(this.numFiles,1);
-        %             try
-        %                 for I=1:this.numFiles
-        %                     %                     signalInst(I)=initdecimationExecutor(this,I);
-        %                     %                     signalInst(I)=decimateFile(signalInst(I));
-        %                     this.signals(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
-        %                     this.signals(I)=initDecimator(this.signals(I),this.initialSeekSamples,this.samplesPerSegment);
-        %                     this.signals(I)=decimateFile(this.signals(I));
-        %                 end
-        %                 %this.signals=signalInst;
-        %             catch ME
-        %                 this.ERROR.executeSequential=ME;
-        %             end
-        %         end
-        
+
         function this=executeSequential(this)
             %generate signals sequentially
             try
@@ -139,7 +120,6 @@ classdef decimationExecutor<executor
                 for I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
-                    %signalDecimators(I)=resetSignalDecimator(signalDecimators(I));
                 end
                 this.signals=signalDecimators;
             catch ME
@@ -154,50 +134,13 @@ classdef decimationExecutor<executor
                 parfor  I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
-                    %signalDecimators(I)=resetSignalDecimator(signalDecimators(I));
                 end
                 this.signals=signalDecimators;
             catch ME
                 this.ERROR.executeParallel=ME;
             end
         end
-        
-        %         function this=executeParallel(this)
-        %
-        %             try
-        %                 %                 for I=1:this.numFiles
-        %                 %                     %                                     signalInst=signalDecimator(this.inputFiles{signalNumber},this.outputFiles{signalNumber},this.oldFs,this.newFs,this.freqShifts(signalNumber),this.filterSpec);
-        %                 %                     signalInst(I)=signalDecimator(this.inputFiles{I},this.outputFiles{I},this.oldFs,this.newFs,this.freqShifts(I),this.filterSpec);
-        %                 %                     signalInst(I)=initDecimator(signalInst(I),this.initialSeekSamples,this.samplesPerSegment);
-        %                 %                     % signalInst(I)=decimateFile(signalInst(I));
-        %                 %                 end
-        %                 %                 this.signals=signalInst;
-        %                 % wrapper = WorkerObjWrapper(this)
-        %                 inputFilesInst=this.inputFiles;
-        %                 outputFilesInst=this.outputFiles;
-        %                 freqShiftsInst=this.freqShifts;
-        %                 oldFsInst=this.oldFs;
-        %                 newFsInst=this.newFs;
-        %                 filterSpecInst=this.filterSpec;
-        %                 initialSeekSamplesInst=this.initialSeekSamples;
-        %                 samplesPerSegmentInst=this.samplesPerSegment;
-        %                 parfor  I=1:this.numFiles
-        %                     %disp(wrapper.Value)
-        %                     %                parfor I=1:this.numFiles
-        %                     %                  disp(char(this.outputFiles))
-        %                     %                  disp(char(this.inputFiles))
-        %                     %  signalInst{I}=startdecimationExecutor(signalInst(I))
-        %                     signalInst(I)=signalDecimator(inputFilesInst{I},outputFilesInst{I},oldFsInst,newFsInst,freqShiftsInst(I),filterSpecInst);
-        %                     signalInst(I)=initDecimator(signalInst(I),initialSeekSamplesInst,samplesPerSegmentInst);
-        %                     signalInst(I)=decimateFile(signalInst(I));
-        %                 end
-        %                 this.signals=signalInst;
-        %             catch ME
-        %                 this.ERROR.executeParallel=ME;
-        %             end
-        %             %foo@Super(obj);
-        %         end
-        
+
     end
     
 end

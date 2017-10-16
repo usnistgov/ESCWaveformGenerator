@@ -35,51 +35,68 @@ classdef executor
         end
         
         function this=set.NumWorkers(this,NumWorkers) 
-            localCluster= parcluster('local');
-            maxNumWorkers=localCluster.NumWorkers;
-            if NumWorkers>maxNumWorkers || NumWorkers<=0
-                ME=MException('executor:NumWorkers', ...
-                    'NumWorkers=%d must be >0 and <=%d',NumWorkers,maxNumWorkers);
-               throw(ME);
+             this=setNumWorkers(this,NumWorkers); 
+        end
+        
+        
+        function this=setNumWorkers(this,NumWorkers)
+            if nargin<2
+                NumWorkers=this.NumWorkers;
+            end
+            
+            licenseName='Distrib_Computing_Toolbox';
+            [hasLicense,err]=utilFun.licenseCheck(licenseName);
+            
+            if hasLicense
+                localCluster= parcluster('local');
+                maxNumWorkers=localCluster.NumWorkers;
+                
+                if NumWorkers>maxNumWorkers || NumWorkers<=0
+                    this.ERROR.setNumWorkers=MException('executor:setNumWorkers', ...
+                        'NumWorkers=%d must be >0 and <=%d',NumWorkers,maxNumWorkers);
+                else
+                    if nargin>1
+                        this.NumWorkers=NumWorkers;
+                    end
+                end
             else
-            this.NumWorkers=NumWorkers;
-            end  
+                this.ERROR.setNumWorkers=MException('executor:setNumWorkers', ...
+                        'License %s is required.\n%s',licenseName,err);
+            end %hasLicense
         end
         
         function this=initParallel(this)
             this.ERROR.poolObj=[];
-            localCluster= parcluster('local');
-            maxNumWorkers=localCluster.NumWorkers;
-            if this.NumWorkers>maxNumWorkers
-                this.ERROR.poolObj=MException('executor:initPar', ...
-                    'NumWorkers=%d must be less or equal to maxNumWorkers=%d',this.NumWorkers,maxNumWorkers);
-                throw(this.ERROR.poolObj);
-            else
-                try
-                    %ME=[];
-                    %minNumWorkers=20; %Set to desired number of workers (do not exceed # cores in system)
-                    this.poolObj = gcp('nocreate'); % If no pool, do not create new one.
-                    
-                    if isempty(this.poolObj)
-                        currentNumWorkers = 0;
-                    else
-                        currentNumWorkers = this.poolObj.NumWorkers;
-                    end
-                    
-                    if currentNumWorkers~=this.NumWorkers
-                        delete(this.poolObj)
-                        this.poolObj=parpool(this.NumWorkers);
-                    end
-                catch ME
-                    this.ERROR.poolObj=ME;
+            try
+                %Do not create a pool if one with the correct number of
+                %workers already exists
+                
+                this=setNumWorkers(this);
+                this.poolObj = gcp('nocreate');
+                
+                if isempty(this.poolObj)
+                    currentNumWorkers = 0;
+                else
+                    currentNumWorkers = this.poolObj.NumWorkers;
                 end
+                
+                if currentNumWorkers~=this.NumWorkers
+                    delete(this.poolObj)
+                    this.poolObj=parpool(this.NumWorkers);
+                end
+                
+            catch ME
+                this.ERROR.poolObj=ME;
             end
+
             if isempty(this.ERROR.poolObj)
-                this.ERROR=[];
+                %this.ERROR=[];
+                this.ERROR = rmfield(this.ERROR,'poolObj');
                 this.parallelState=true;
             else
                 this.parallelState=false;
             end
+            %}
         end
         
         function this=updateParalelState(this)
@@ -103,13 +120,13 @@ classdef executor
             %run currnetly initiated executor
             switch this.useParallel
                 case 'On'
-                this=updateParalelState(this);
-                if ~this.parallelState
-                    this=initParallel(this);
-                end
-                this=executeParallel(this);
+                    this=updateParalelState(this);
+                    if ~this.parallelState
+                        this=initParallel(this);
+                    end
+                    this=executeParallel(this);
                 case 'Off'
-                this=executeSequential(this);
+                    this=executeSequential(this);
             end
         end
     end

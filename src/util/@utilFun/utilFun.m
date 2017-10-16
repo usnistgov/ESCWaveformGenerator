@@ -89,6 +89,30 @@ classdef utilFun
                 waveformMapStruct=[];
             end
         end
+        
+        function [hasLicense,err]=licenseCheck(licenseName)
+            %checks for existance of license (unless compiled)
+            %attempts to checkout license
+            
+            licTest=license( 'test' , licenseName);
+            err='';
+            hasLicense=false; %assume no license
+            if (ismcc || isdeployed)
+                hasLicense = true;
+            else
+                if licTest
+                    %You own this license (license found)
+                    licCheckout=license( 'checkout' , licenseName);
+                    if licCheckout
+                        hasLicense=true;
+                    else
+                        err=sprintf('All license are in use for %s',licenseName);
+                    end
+                else
+                    err=sprintf('You do not have the toolbox %s',licenseName);
+                end
+            end
+        end
     end
     
 end
