@@ -26,15 +26,37 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
     
     methods
         function this=signalDecimator(inputFile,outputFile,oldFs,newFs,freqShift,filterSpec)
-            this.inputFile=inputFile;
-            
-            this.outputFile=outputFile;
+            %Verify input file exists, throw error if they do not
+              if (exist(inputFile,'file') ~= 2)
+                  ME = MException('signalDecimator:invalidFile', ...
+                      'Input file does not exist! Filename:\n%s\n\n',...
+                      inputFile);
+                  throw(ME);
+              else
+                  this.inputFile=inputFile;
+              end
+              
+              %Verify output folder exists but individual files do not
+              [filesPathDec,~,~]=fileparts(outputFile);
+              if (exist(filesPathDec,'file') ~= 7)
+                  ME = MException('testDecimate:invalidFile', ...
+                      'Output folder does not exist!');
+                  throw(ME);
+              elseif (exist(outputFile,'file') == 2)
+                  ME = MException('signalDecimator:invalidFile', ...
+                      'Output file already exists! Filename:\n%s\n\n',...
+                      outputFile);
+                  throw(ME);
+              else
+                  this.outputFile=outputFile;
+              end
             
             this.oldFs=oldFs;
             this.newFs=newFs;
             this.freqShift=freqShift;
             this.filterSpec=filterSpec;
         end
+        
         function this=initDecimator(this)
             %I&Q were swapped in the orignal NASCTN waveform files 
             this.inputIQDirection='QI';
