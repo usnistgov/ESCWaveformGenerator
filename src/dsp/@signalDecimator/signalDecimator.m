@@ -58,7 +58,7 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
         end
         
         function this=initDecimator(this)
-            %I&Q were swapped in the orignal NASCTN waveform files 
+            %NASCTN waveform files use QI format
             this.inputIQDirection='QI';
             %Switch output files to I&Q
             this.outputIQDirection='IQ';
@@ -73,7 +73,6 @@ classdef signalDecimator<radarSignalFromFile & signalToFile
 
         end
         function this=decimateFile(this)
-                % disp(this)
                  signalTime=getSignalTime(this);
                  numOfSegments=floor(signalTime.totalNumberOfSamples/this.samplesPerSegment);
                  leftOverSamples=0;

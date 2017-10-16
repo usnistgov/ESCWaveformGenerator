@@ -120,6 +120,7 @@ classdef decimationExecutor<executor
                 for I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
+                    signalDecimators(I)=resetSignalDecimator(signalDecimators(I)); 
                 end
                 this.signals=signalDecimators;
             catch ME
@@ -134,6 +135,7 @@ classdef decimationExecutor<executor
                 parfor  I=1:this.numFiles
                     signalDecimators(I)=initDecimator(signalDecimators(I));
                     signalDecimators(I)=decimateFile(signalDecimators(I));
+                    signalDecimators(I)=resetSignalDecimator(signalDecimators(I)); 
                 end
                 this.signals=signalDecimators;
             catch ME
