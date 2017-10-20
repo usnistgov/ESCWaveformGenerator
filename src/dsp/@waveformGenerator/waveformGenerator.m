@@ -341,38 +341,43 @@ classdef waveformGenerator<executor
         function [this,waveformsObj]=executeSequential(this)
             %generate signals sequentially
             waveformsObj=setupWaveforms(this);
-            forwardToMaxPeakFlag=this.shortFile;
+%             forwardToMaxPeakFlag=this.shortFile;
             try            
             for I=1:this.numFiles
-                waveformsObj(I)=setupLTEChannel(waveformsObj(I));
-                waveformsObj(I)=setupLTESignal(waveformsObj(I), this.waveformsMap{I}('LTESignalSource')...
-                    ,this.waveformsMap{I}('LTEReadScaleFactor')*ones(1,this.waveformsMap{I}('numLTESignals')),...
-                    zeros(1,this.waveformsMap{I}('numLTESignals')));
-                
-                if ~this.waveformsMap{I}('ManualRadarReadScale')
-                    waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')));
-                    waveformsObj(I)=setupABISignal( waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')));
-                else
-                    waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')),...
-                        this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numRadarSignals')));
-                    waveformsObj(I)=setupABISignal(waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')),...
-                        this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
-                end
-                waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
-                waveformsObj(I)=estimateGains(waveformsObj(I));
-                waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
+                waveformsObjElement=waveformsObj(I);
+                waveformsMapElement=this.waveformsMap{I};
+                waveformsObj(I)=generateWaveform(this,waveformsObjElement,waveformsMapElement);
+%                 waveformsObj(I)=setupLTEChannel(waveformsObj(I));
+%                 waveformsObj(I)=setupLTESignal(waveformsObj(I), this.waveformsMap{I}('LTESignalSource')...
+%                     ,this.waveformsMap{I}('LTEReadScaleFactor')*ones(1,this.waveformsMap{I}('numLTESignals')),...
+%                     zeros(1,this.waveformsMap{I}('numLTESignals')));
+%                 
+%                 if ~this.waveformsMap{I}('ManualRadarReadScale')
+%                     waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')));
+%                     waveformsObj(I)=setupABISignal( waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')));
+%                 else
+%                     waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')),...
+%                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numRadarSignals')));
+%                     waveformsObj(I)=setupABISignal(waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')),...
+%                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
+%                 end
+%                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
+%                 waveformsObj(I)=estimateGains(waveformsObj(I));
+%                 waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
+            
             this=updateWaveformMapGains(this,waveformsObj);
-            [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
-            numDigits=numel(num2str(this.numFiles));
-            jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
-            waveformMapJSON=jsonencode(this.waveformsMap);
-            [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
-            fwrite(SaveJsonFileId,waveformMapJSON,'char');
+            saveWaveformMetaToJSON(this);
+%             [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
+%             numDigits=numel(num2str(this.numFiles));
+%             jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
+%             waveformMapJSON=jsonencode(this.waveformsMap);
+%             [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
+%             fwrite(SaveJsonFileId,waveformMapJSON,'char');
             catch ME
                 this.ERROR.sequentialGen=ME;
             end 
@@ -382,42 +387,80 @@ classdef waveformGenerator<executor
         function [this,waveformsObj]=executeParallel(this)
             %generate signals in parallel
             waveformsObj=setupWaveforms(this);
-            forwardToMaxPeakFlag=this.shortFile;
+%             forwardToMaxPeakFlag=this.shortFile;
             try
             parfor I=1:this.numFiles
-                waveformsObj(I)=setupLTEChannel(waveformsObj(I));
-                waveformsObj(I)=setupLTESignal(waveformsObj(I), this.waveformsMap{I}('LTESignalSource')...
-                    ,this.waveformsMap{I}('LTEReadScaleFactor')*ones(1,this.waveformsMap{I}('numLTESignals')),...
-                    zeros(1,this.waveformsMap{I}('numLTESignals')));
-                
-                if ~this.waveformsMap{I}('ManualRadarReadScale')
-                    waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')));
-                    waveformsObj(I)=setupABISignal( waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')));
-                else
-                    waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')),...
-                        this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numRadarSignals')));
-                    waveformsObj(I)=setupABISignal(waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
-                        this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')),...
-                        this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
-                end
-                waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
-                waveformsObj(I)=estimateGains(waveformsObj(I));
-                waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
+                waveformsObjElement=waveformsObj(I);
+                waveformsMapElement=this.waveformsMap{I};
+                waveformsObj(I)=generateWaveform(this,waveformsObjElement,waveformsMapElement);
+%                 waveformsObj(I)=setupLTEChannel(waveformsObj(I));
+%                 waveformsObj(I)=setupLTESignal(waveformsObj(I), this.waveformsMap{I}('LTESignalSource')...
+%                     ,this.waveformsMap{I}('LTEReadScaleFactor')*ones(1,this.waveformsMap{I}('numLTESignals')),...
+%                     zeros(1,this.waveformsMap{I}('numLTESignals')));
+%                 
+%                 if ~this.waveformsMap{I}('ManualRadarReadScale')
+%                     waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')));
+%                     waveformsObj(I)=setupABISignal( waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')));
+%                 else
+%                     waveformsObj(I)=setupRadarSignal(waveformsObj(I),this.waveformsMap{I}('radarSignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numRadarSignals')),...
+%                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numRadarSignals')));
+%                     waveformsObj(I)=setupABISignal(waveformsObj(I),this.waveformsMap{I}('ABISignalSource'),...
+%                         this.waveformsMap{I}('radarFileMeta'),zeros(1,this.waveformsMap{I}('numABISignals')),...
+%                         this.waveformsMap{I}('RadarReadScale')*ones(1,this.waveformsMap{I}('numABISignals')));
+%                 end
+%                 waveformsObj(I)=setupWaveformToFile(waveformsObj(I),this.waveformsMap{I}('waveformPath'));
+%                 waveformsObj(I)=estimateGains(waveformsObj(I));
+%                 waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
             end
             this=updateWaveformMapGains(this,waveformsObj);
+            saveWaveformMetaToJSON(this);
+%             [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
+%             numDigits=numel(num2str(this.numFiles));
+%             jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
+%             waveformMapJSON=jsonencode(this.waveformsMap);
+%             [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
+%             fwrite(SaveJsonFileId,waveformMapJSON,'char');
+            catch ME
+                this.ERROR.parallelGen=ME;
+            end           
+            assignin('base','waveformsObjPar',waveformsObj);
+        end
+        
+        function saveWaveformMetaToJSON(this)
             [saveDir,fileName]=fileparts(this.waveformsMap{1}('waveformPath'));
             numDigits=numel(num2str(this.numFiles));
             jsonMapFilePath=fullfile(saveDir,strcat(fileName(1:end-numDigits),'WaveformMap.json'));
             waveformMapJSON=jsonencode(this.waveformsMap);
             [SaveJsonFileId,errmsg_write_json]=fopen(jsonMapFilePath,'w','n','UTF-8');
             fwrite(SaveJsonFileId,waveformMapJSON,'char');
-            catch ME
-                this.ERROR.parallelGen=ME;
-            end           
-            assignin('base','waveformsObjPar',waveformsObj);
+        end
+        
+        function waveformsObjElement=generateWaveform(this,waveformsObjElement,waveformsMapElement) %TODO reorg code
+            waveformsObjElement=setupLTEChannel(waveformsObjElement);
+            waveformsObjElement=setupLTESignal(waveformsObjElement, waveformsMapElement('LTESignalSource')...
+                ,waveformsMapElement('LTEReadScaleFactor')*ones(1,waveformsMapElement('numLTESignals')),...
+                zeros(1,waveformsMapElement('numLTESignals')));
+            
+            if ~waveformsMapElement('ManualRadarReadScale')
+                waveformsObjElement=setupRadarSignal(waveformsObjElement,waveformsMapElement('radarSignalSource'),...
+                    waveformsMapElement('radarFileMeta'),zeros(1,waveformsMapElement('numRadarSignals')));
+                waveformsObjElement=setupABISignal( waveformsObjElement,waveformsMapElement('ABISignalSource'),...
+                    waveformsMapElement('radarFileMeta'),zeros(1,waveformsMapElement('numABISignals')));
+            else
+                waveformsObjElement=setupRadarSignal(waveformsObjElement,waveformsMapElement('radarSignalSource'),...
+                    waveformsMapElement('radarFileMeta'),zeros(1,waveformsMapElement('numRadarSignals')),...
+                    waveformsMapElement('RadarReadScale')*ones(1,waveformsMapElement('numRadarSignals')));
+                waveformsObjElement=setupABISignal(waveformsObjElement,waveformsMapElement('ABISignalSource'),...
+                    waveformsMapElement('radarFileMeta'),zeros(1,waveformsMapElement('numABISignals')),...
+                    waveformsMapElement('RadarReadScale')*ones(1,waveformsMapElement('numABISignals')));
+            end
+            waveformsObjElement=setupWaveformToFile(waveformsObjElement,waveformsMapElement('waveformPath'));
+            waveformsObjElement=estimateGains(waveformsObjElement);
+%             waveformsObj(I)=generateFullWaveform(waveformsObj(I),forwardToMaxPeakFlag);
+            waveformsObjElement=generateFullWaveform(waveformsObjElement,this.shortFile);
         end
         
         function this=updateWaveformMapGains(this,waveformsObj)
