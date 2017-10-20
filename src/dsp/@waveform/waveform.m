@@ -704,7 +704,7 @@ classdef waveform
             end
         end
         
-        function scaleFactor=estimateScaleFactor(sigPInterf)
+        function scaleFactor=estimateScaleFactor(this,sigPInterf)
             minINT16=double(intmin('int16'));
             maxINT16=double(intmax('int16'));
             boundGuarddBMag=20;
@@ -796,7 +796,7 @@ classdef waveform
             WGN=sqrt(this.AWGNVar)*(randn(tempSamplesPerSegment,1)+1i*randn(tempSamplesPerSegment,1))/sqrt(2);
             sigPInterf=sum(radarSignalData,2)+sum(double(this.LTEStatus).*this.LTEGain.*LTESignalData,2)...
                 +sum(double(this.ABIStatus).*this.ABIGain.*ABISignalData,2)+WGN;
-              scaleFactor=estimateScaleFactor(sigPInterf);
+              scaleFactor=estimateScaleFactor(this,sigPInterf);
 %             minINT16=double(intmin('int16'));
 %             maxINT16=double(intmax('int16'));
 %             boundGuarddBMag=20;
@@ -1041,7 +1041,7 @@ classdef waveform
             AWGNVarF=constMultiply^2*AWGNVarF;
             sigPInterf=constMultiply*sigPInterf;
             
-            scaleFactor=estimateScaleFactor(sigPInterf);
+            scaleFactor=estimateScaleFactor(this,sigPInterf);
 %             minINT16=double(intmin('int16'));
 %             maxINT16=double(intmax('int16'));
 %             boundGuarddBMag=20;

@@ -67,11 +67,12 @@ classdef executor
         end
         
         function this=set.NumWorkers(this,NumWorkers) 
-             this=setNumWorkers(this,NumWorkers); 
+             [this,NumWorkersOut]=setNumWorkers(this,NumWorkers); 
+             this.NumWorkers=NumWorkersOut;
         end
         
         
-        function this=setNumWorkers(this,NumWorkers)
+        function [this,NumWorkersOut]=setNumWorkers(this,NumWorkers)
             if nargin<2
                 NumWorkers=this.NumWorkers;
             end
@@ -88,7 +89,7 @@ classdef executor
                         'NumWorkers=%d must be >0 and <=%d',NumWorkers,maxNumWorkers);
                 else
                     if nargin>1
-                        this.NumWorkers=NumWorkers;
+                        NumWorkersOut=NumWorkers;
                     end
                 end
             else
@@ -122,8 +123,8 @@ classdef executor
             end
 
             if isempty(this.ERROR.poolObj)
-                %this.ERROR=[];
-                this.ERROR = rmfield(this.ERROR,'poolObj');
+                this.ERROR=[];
+                %this.ERROR = rmfield(this.ERROR,'poolObj');
                 this.parallelState=true;
             else
                 this.parallelState=false;
