@@ -89,12 +89,21 @@ classdef waveform
         waveformFilepath
     end
     
+<<<<<<< HEAD
      properties(Constant,Access=private)
      LTEBw=9e6;
      numLTEwindows=1;
      P_KTB_dB=-174-30;
      referenceLoad=50;
      end
+=======
+    properties(Constant,Access=private)
+        LTEBw=9e6;
+        numLTEwindows=1;
+        P_KTB_dB=-174-30;
+        referenceLoad=50;
+    end
+>>>>>>> parent of a5ab43c... Commented waveform
     
     methods
         function this=waveform(Fs)     
@@ -465,6 +474,10 @@ classdef waveform
             if calculateSIRFlag
                 
                 if nargin>1
+<<<<<<< HEAD
+=======
+                    % Forwards both LTE & ABI to appropraite seek position for a short file
+>>>>>>> parent of a5ab43c... Commented waveform
                     if forwardToMaxPeakFlag
                         timeBeforMaxPeak=1;
                         for I=1:this.numRadarSignals
