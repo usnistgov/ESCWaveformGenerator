@@ -31,8 +31,7 @@
 ...% copyright protection within the United States.
 
 classdef utilFun
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %utilFun Various (utility) functions
     
     properties (Constant)
     end
@@ -70,24 +69,28 @@ classdef utilFun
             end
         end
         
-        function sortedCell=sortByNunbers(unsortedCell)
+        function sortedCell=sortByNumbers(unsortedCell)
             digits=regexp(unsortedCell,'\d');
             values=zeros(length(unsortedCell),1);
+            
             for I=1:length(unsortedCell)
                 values(I)=str2double(unsortedCell{I}(digits{I}));
             end
+            
             [~,I]=sort(values);
             sortedCell=unsortedCell(I);
         end
         
         function durationCh=sec2DurationChar(tsec)
+            %converts toc into human readable time
             displayFormat='hh:mm:ss.SSS';
             runtime=duration(0,0,tsec,'Format',displayFormat);
             durationCh=sprintf('%s',runtime);
         end
         
         function [waveformStruct,waveformFilePath,waveformMapStruct]=readWaveformJsonDir(inputDir)
-            % usage
+            %Assumes one waveform JSON map in the folder 
+            % example usage
             % inputDir='D:\Spectrum-Share\SanDiegoMixedWaveformsTestV9';
             % [waveformStruct9,waveformFilePath9,waveformMapStruct9]=utilFun.readWaveformJsonDir(inputDir)
             % waveformTable9=struct2table(waveformStruct9);
@@ -103,8 +106,8 @@ classdef utilFun
             jsonFilesCellNoExt = cellfun(@(x) x(1:end-length('.json')), jsonFilesCell, 'un', 0);
             jsonFilesCellMap = cellfun(@(x) x(end-length('Map')+1:end), jsonFilesCellNoExt, 'un', 0) ;
             datHasJSONIndx=0;
+            
             for I=1:length(datFiles)
-                %if ~strcmp(jsonFiles(I).name(end-length('Map.json')+1:end-length('.json')),'Map')
                 datHasJSON=ismember(jsonFilesCellNoExt,datFiles(I).name(1:end-length('.dat')));
                 if  any(datHasJSON)
                     datHasJSONIndx=datHasJSONIndx+1;
@@ -113,6 +116,7 @@ classdef utilFun
                     waveformFilePath{datHasJSONIndx,1}=fullfile(inputDir,datFiles(I).name);
                 end
             end
+            
             dirHasJSONMap=ismember(jsonFilesCellMap,'Map');
             if any(dirHasJSONMap)
                 jsonText=fileread(fullfile(inputDir,char(jsonFilesCell(dirHasJSONMap))));
@@ -124,7 +128,7 @@ classdef utilFun
         
         function [hasLicense,err]=licenseCheck(licenseName)
             %checks for existance of license (unless compiled)
-            %attempts to checkout license
+            %attempts to checkout license once license is known to exist
             
             licTest=license( 'test' , licenseName);
             err='';
