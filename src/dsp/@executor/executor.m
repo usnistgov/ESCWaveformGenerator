@@ -51,7 +51,7 @@ classdef executor
         % run parallel
         function this=executor(numFiles)
             if nargin>0
-            this.numFiles=numFiles;
+                this.numFiles=numFiles;
             end
         end
         
@@ -79,7 +79,7 @@ classdef executor
             
             licenseName='Distrib_Computing_Toolbox';
             [hasLicense,err]=utilFun.licenseCheck(licenseName);
-            
+
             if hasLicense
                 localCluster= parcluster('local');
                 maxNumWorkers=localCluster.NumWorkers;
@@ -87,6 +87,7 @@ classdef executor
                 if NumWorkers>maxNumWorkers || NumWorkers<=0
                     this.ERROR.setNumWorkers=MException('executor:setNumWorkers', ...
                         'NumWorkers=%d must be >0 and <=%d',NumWorkers,maxNumWorkers);
+                    throw(this.ERROR.setNumWorkers);
                 else
                     if nargin>1
                         NumWorkersOut=NumWorkers;
@@ -95,6 +96,7 @@ classdef executor
             else
                 this.ERROR.setNumWorkers=MException('executor:setNumWorkers', ...
                         'License %s is required.\n%s',licenseName,err);
+                    throw(this.ERROR.setNumWorkers);
             end %hasLicense
         end
         
@@ -124,7 +126,6 @@ classdef executor
 
             if isempty(this.ERROR.poolObj)
                 this.ERROR=[];
-                %this.ERROR = rmfield(this.ERROR,'poolObj');
                 this.parallelState=true;
             else
                 this.parallelState=false;
@@ -150,7 +151,7 @@ classdef executor
         end
         
         function this=runExecutor(this)
-            %run currnetly initiated executor
+            %run currently initiated executor
             switch this.useParallel
                 case 'On'
                     this=updateParalelState(this);

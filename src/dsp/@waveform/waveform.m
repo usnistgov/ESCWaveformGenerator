@@ -760,33 +760,33 @@ classdef waveform
 
             %Calculate LTE gain
             for JL=1:this.numLTESignals
-                currentLTESeekPosisionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));% save current LTE seek position
+                currentLTESeekPositionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));% save current LTE seek position
                 this.LTESignal(JL).samplesPerSegment=tempSamplesPerSegment;
                 this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  LTESeekPositionSamples);
                 LTESignalData(:,JL) =readSamples(this.LTESignal(JL)).*exp(1i*2*pi*this.LTEFreqOffset(JL)*t);
                 LTEPowdB=pow2db((sum(abs(LTESignalData(:,JL)).^2)/tempSamplesPerSegment)/9); %Approximation to set LTE over 1 MHz (see line below for more accurate approach)
                 LTEdBLevel=this.PowerLevels_dBm.LTEPower-30;
                 this.LTEGain(JL)=sqrt(db2pow(LTEdBLevel-LTEPowdB));
-                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),currentLTESeekPosisionSamples(JL)); %retrieve original LTE position
+                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),currentLTESeekPositionSamples(JL)); %retrieve original LTE position
             end
             
             %Calculate ABI gain
             for JA=1:this.numABISignals
                 ABIAdjust_dB=this.PowerLevels_dBm.ABIPower-30;
-                currentABISeekPosisionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
+                currentABISeekPositionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
                 this.ABIGain(JA)=sqrt(db2pow(ABIAdjust_dB));
                 this.ABISignal(JA).samplesPerSegment=tempSamplesPerSegment;
                 ABISignalData(:,JA) =readSamples(this.ABISignal(JA)).*exp(1i*2*pi*this.ABIFreqOffset(JA)*t);
-                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
+                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPositionSamples(JA));
             end
 
             %sample radar signal using new gain
             for JR=1:this.numRadarSignals
-                currentradarSeekPosisionSamples(JR)=getSeekPositionSamples(this.radarSignal(JR));
+                currentRadarSeekPositionSamples(JR)=getSeekPositionSamples(this.radarSignal(JR));
                 this.radarSignal(JR)=setSeekPositionSamples(this.radarSignal(JR),  round((maxPeakLoc(JR)-this.measParameters.SIRWindow/2)*this.Fs));
                 this.radarSignal(JR).samplesPerSegment=tempSamplesPerSegment;
                 radarSignalData(:,JR) =double(this.radarStatus(JR))*this.radarGain(JR)*readSamples(this.radarSignal(JR)).*exp(1i*2*pi*this.radarFreqOffset(JR)*t);
-                this.radarSignal(JR)=setSeekPositionSamples(this.radarSignal(JR),  currentradarSeekPosisionSamples(JR));
+                this.radarSignal(JR)=setSeekPositionSamples(this.radarSignal(JR),  currentRadarSeekPositionSamples(JR));
             end
 
             %Calculate AWGN noise variance
@@ -816,7 +816,8 @@ classdef waveform
             % estimate and set radarGain, LTEgain, ABIgain, and
             % writeScaleFactor from target SIR
             samplesPerSegmentF=this.samplesPerSegment;
-            tempSamplesPerSegment=round(this.SIRData(1).window*this.Fs);
+            %tempSamplesPerSegment=round(this.SIRData(1).window*this.Fs);
+            tempSamplesPerSegment=round(this.measParameters.SIRWindow*this.Fs);
             
             t=1/this.Fs*(0:(tempSamplesPerSegment-1)).'; % reference to t=0 start time
             this.samplesPerSegment=tempSamplesPerSegment;
@@ -842,17 +843,16 @@ classdef waveform
             else
                 ABIStartTimeEst=this.ABIStartTime;
             end
-            
-            
+
             this=updateSamplesPerSegment(this);
             
             %save seek position for both LTE & ABI
             for JL=1:this.numLTESignals
-                currentLTESeekPosisionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));
+                currentLTESeekPositionSamples(JL)=getSeekPositionSamples(this.LTESignal(JL));
             end          
             
             for JA=1:this.numABISignals
-                currentABISeekPosisionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
+                currentABISeekPositionSamples(JA)=getSeekPositionSamples(this.ABISignal(JA));
             end
             
             for IR=1:this.numRadarSignals
@@ -862,10 +862,11 @@ classdef waveform
                     estimateRadarNoise(this.radarSignal(IR), this.Fs,this.SIRData(IR).original);
                 
                 % save radar current seek position
-                currentRadarSeekPosisionamples(IR)=getSeekPositionSamples(this.radarSignal(IR));
+                currentRadarSeekPositionSamples(IR)=getSeekPositionSamples(this.radarSignal(IR));
                 
                 % find location of max peak
-                peakSeekPositionSamples(IR)=round((maxPeakLoc(IR)-this.SIRData(IR).window/2)/(1/this.Fs));
+                %peakSeekPositionSamples(IR)=round((maxPeakLoc(IR)-this.SIRData(IR).window/2)/(1/this.Fs));
+                peakSeekPositionSamples(IR)=round((maxPeakLoc(IR)-this.measParameters.SIRWindow/2)/(1/this.Fs));
                 this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR), peakSeekPositionSamples(IR));
                 maxPeakSamples=readSamples(this.radarSignal(IR));
                 
@@ -878,7 +879,7 @@ classdef waveform
       
                 tr=t+peakSeekPositionSamples(IR)*(1/this.Fs);
                 radarSignalData(:,IR) =double(this.radarStatus(IR))*(maxPeakSamples.*exp(1i*2*pi*this.radarFreqOffset(IR)*tr));
-                this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR),  currentRadarSeekPosisionSamples(IR));  %retrieve original seek position for radar
+                this.radarSignal(IR)=setSeekPositionSamples(this.radarSignal(IR),  currentRadarSeekPositionSamples(IR));  %retrieve original seek position for radar
                 
                 % 1st dim data, 2nd dim signal, 3rd dim radar ref (radar peak)
                 %Matrix: (data samples,interference signal index,radar ref index)
@@ -900,11 +901,11 @@ classdef waveform
             
             %Retrieve seek position for both LTE & ABI
             for JL=1:this.numLTESignals
-                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  currentLTESeekPosisionSamples(JL));
+                this.LTESignal(JL)=setSeekPositionSamples(this.LTESignal(JL),  currentLTESeekPositionSamples(JL));
             end
             
             for JA=1:this.numABISignals
-                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPosisionSamples(JA));
+                this.ABISignal(JA)=setSeekPositionSamples(this.ABISignal(JA),  currentABISeekPositionSamples(JA));
             end
             
             %peakPowerThreshold_dB=-89-30;%-119 dB %we declared peakPowerThreshold_dB
@@ -913,9 +914,7 @@ classdef waveform
             %TODO check how to use this (median) instead of max
             %medianPeakPowOrig_dB=pow2db((medianPeak).^2);
             
-            %TODO this is a bit of a mess ,we need to clean up this code
-            % BEGIN MESS
-            
+            %TODO clean up this code (Begin unmerged)
             noisePowAdjustfactor=ones(this.numRadarSignals,1);
             noiseAdjustfactor_dB=this.P_KTB_dB-noisePSD_dB;
             noisePowAdjustfactor(noiseAdjustfactor_dB<0)=db2pow(noiseAdjustfactor_dB(noiseAdjustfactor_dB<0));
@@ -924,7 +923,7 @@ classdef waveform
 %             peakVolAdjustfactor=sqrt(peakPowAdjustfactor);
 %             rdrGainLowUpVol=[peakVolAdjustfactor,noiseVolAdjustfactor];
             
-            % nedd to make sure that peakVolAdjustfactor<noiseVolAdjustfactor otherwise
+            % need to make sure that peakVolAdjustfactor<noiseVolAdjustfactor otherwise
             % either don't use this waveform or set it to noiseVolAdjustfactor
             %RDRSig=(noiseVolAdjustfactor.').*radarSignalData;
             
@@ -945,9 +944,8 @@ classdef waveform
 %             LTESig(:,JL,:)=LTEGainsVol(JL)*LTESignalData(:,JL,:);
 %             end
             LTESig=(LTEGainsVol.').*LTESignalData;
-            
-            
-            % END MESS
+            % END unmerged
+
             SIRtargetNum=db2pow(this.targetSIR);
             
             %TODO this needs to be corrected according to ADCscale (i.e. for each ADCscale the noise floor is the same)
