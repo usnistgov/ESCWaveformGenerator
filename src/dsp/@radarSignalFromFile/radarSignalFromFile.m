@@ -29,7 +29,6 @@
 ...% any situation where a failure could cause risk of injury or damage to
 ...% property. The software developed by NIST employees is not subject to
 ...% copyright protection within the United States.
-
 classdef radarSignalFromFile<signalFromFile
     %Signal from file for radar files with meta data, i.e. readScale from sheet
     % set read scale from meta file 

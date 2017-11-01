@@ -29,7 +29,6 @@
 ...% any situation where a failure could cause risk of injury or damage to
 ...% property. The software developed by NIST employees is not subject to
 ...% copyright protection within the United States.
-
 classdef signalDecimator<radarSignalFromFile & signalToFile
     %signal decimator class
     %read radar waveform file, decimate and save it to a file
