@@ -1,6 +1,8 @@
 # ESC Waveform Generator
 
 ## Legal Disclaimer
+
+### Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
  You may use, copy and distribute copies of the software in any medium,
  provided that you keep intact this entire notice. You may improve,
@@ -32,7 +34,8 @@
  property. The software developed by NIST employees is not subject to
  copyright protection within the United States.
 
-## Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
+### Commercial Disclaimer
+ Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
 
 - Waveform generator for testing Environmental Sensing Capability (ESC) sensors
 - Generate waveforms for developing detection algorithm of incumbent radar

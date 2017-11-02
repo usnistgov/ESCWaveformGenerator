@@ -29,6 +29,7 @@
 ...% any situation where a failure could cause risk of injury or damage to
 ...% property. The software developed by NIST employees is not subject to
 ...% copyright protection within the United States.
+
 classdef signalToFile
     %Save signal to a file:
     %              writeScale: sacle signal before saving

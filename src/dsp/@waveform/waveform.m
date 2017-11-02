@@ -29,6 +29,7 @@
 ...% any situation where a failure could cause risk of injury or damage to
 ...% property. The software developed by NIST employees is not subject to
 ...% copyright protection within the United States.
+
 classdef waveform 
     %waveform generator combines radar signal from file and LTE signal
     %  parameters:

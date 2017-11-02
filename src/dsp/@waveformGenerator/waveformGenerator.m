@@ -29,6 +29,7 @@
 ...% any situation where a failure could cause risk of injury or damage to
 ...% property. The software developed by NIST employees is not subject to
 ...% copyright protection within the United States.
+
 classdef waveformGenerator<executor
     %REWRITE using executor
     %   Detailed explanation goes here
@@ -297,7 +298,7 @@ classdef waveformGenerator<executor
                this.ERROR.initWaveformsMap=ME;
            end
             
-         %assignin('base','initwaveformsMap',this.waveformsMap);  
+         assignin('base','initwaveformsMap',this.waveformsMap);  
             
         end
         
