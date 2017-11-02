@@ -1,8 +1,7 @@
-# ESC Waveform Generator
+3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
 
-## Legal Disclaimer
-
-### Software Disclaimer
+# 1. Legal Disclaimer
+## Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
  You may use, copy and distribute copies of the software in any medium,
  provided that you keep intact this entire notice. You may improve,
@@ -34,10 +33,68 @@
  property. The software developed by NIST employees is not subject to
  copyright protection within the United States.
 
-### Commercial Disclaimer
+## Commercial Disclaimer
  Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
-
-- Waveform generator for testing Environmental Sensing Capability (ESC) sensors
-- Generate waveforms for developing detection algorithm of incumbent radar
+ 
+# 2. 
+- A simple Matlab framework for reading/saving signals from/to large files 
+- Signal processing for decimating radar field-measured waveforms 
+- Signal processing for mixing radar field-measured waveforms with interference signals
+- The GUI simplifies the selection of certain parameters such as signal power levels, and randomizes other parameters such as start time, and frequency
+- Automates the generation of multiple waveform files 
+- Generate waveforms for developing detection algorithm of incumbent radar for 3.5 GHz spectrum sharing
 - Generate training data for machine learning based algorithms 
-- Current development using Matlab 2016b
+- Current development using Matlab 2017b
+- The Generation tool can be compiled and deployed
+- For more information see (presentation Link)
+
+Prerequisites for generating waveforms:
+1. Requires field measured radar waveforms (ref NACTN reports)
+2. Decimate waveforms from original sampling frequency (225 MHz) to 25 MHz, e.g. see decimation code
+3. Evaluate main sweep peaks of radar one files and save them in the same directory, e.g. see peaks finder code. These are necessary for setting power levels or target SIR per definition. 
+4. SIR is defined as:
+
+5. Additional interference signals must be generated and saved in files before mixing
+   a. LTE signals are generated as 90 sec length, up-sampled to 25 MHz and saved to files
+   b. Adjacent band interference (ABI) are extracted from NACTN field measured radar waveforms and decimated to 25 MHz
+The GUI application is currently limited to process two radar one files, two LTE signals, and one ABI signal. All files must be on the binary IQ format with 25 MHz sampling rates. However, the framework can be used for different sampling rates. 
+
+Prerequisites for Deployment:
+Verify that version 9.3 (R2017b) of the MATLAB Runtime is installed.   
+
+If the MATLAB Runtime is not installed, you can run the MATLAB Runtime installer.
+To find its location, enter
+  
+    >>mcrinstaller
+      
+at the MATLAB prompt.
+
+Alternatively, download and install the Windows version of the MATLAB Runtime for R2017b 
+from the following link on the [MathWorks website](http://www.mathworks.com/products/compiler/mcr/index.html)
+   
+For more information about the MATLAB Runtime and the MATLAB Runtime installer, see 
+Package and Distribute in the MATLAB Compiler documentation  
+in the MathWorks Documentation Center.    
+
+NOTE: You will need administrator rights to run the MATLAB Runtime installer. 
+
+
+# 3. Files to Deploy and Package
+
+Files to Package for Standalone 
+================================
+* ESCWaveformGenerator.exe
+* MCRInstaller.exe 
+    Note: if end users are unable to download the MATLAB Runtime using the
+    instructions in the previous section, include it when building your 
+    component by clicking the "Runtime downloaded from web" link in the
+    Deployment Tool.
+* This readme file 
+
+# 4. Definitions
+
+For information on deployment terminology, go to
+http://www.mathworks.com/help and select MATLAB Compiler >
+Getting Started > About Application Deployment >
+Deployment Product Terms in the MathWorks Documentation
+Center.
