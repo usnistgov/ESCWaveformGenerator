@@ -1,7 +1,8 @@
-3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
+# 3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
 
-# 1. Legal Disclaimers
-## Software Disclaimer
+![ESC Icon](src/res/icon.ico)
+## 1. Legal Disclaimers
+### Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
  You may use, copy and distribute copies of the software in any medium,
  provided that you keep intact this entire notice. You may improve,
@@ -33,10 +34,11 @@
  property. The software developed by NIST employees is not subject to
  copyright protection within the United States.
 
-## Commercial Disclaimer
+### Commercial Disclaimer
  Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
  
-# 2. 
+## 2. Outline
+
 - A simple Matlab framework for reading/saving signals from/to large files 
 - Signal processing for decimating radar field-measured waveforms 
 - Signal processing for mixing radar field-measured waveforms with interference signals
@@ -46,20 +48,26 @@
 - Generate training data for machine learning based algorithms 
 - Current development using Matlab 2017b
 - The Generation tool can be compiled and deployed
-- For more information see (presentation Link)
+- For more information see [Presentation Link]()
 
-Prerequisites for generating waveforms:
-1. Requires field measured radar waveforms (ref NACTN reports)
-2. Decimate waveforms from original sampling frequency (225 MHz) to 25 MHz, e.g. see decimation code
+## 3. Prerequisites for generating waveforms:
+1. Requires field measured radar waveforms 
+    * [3.5 GHz Radar Waveform Capture at Point Loma Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-point-loma)
+
+    * [3.5 GHz Radar Waveform Capture at Fort Story Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-fort-story-final-test-report)
+    
+2. Files can be reduced in size using the included Decimator from the raw 225 MHz down to 25 MHz.  See the example testDecimate.m located at:
+
+    *  src\tests\testDecimate.m
+
 3. Evaluate main sweep peaks of radar one files and save them in the same directory, e.g. see peaks finder code. These are necessary for setting power levels or target SIR per definition. 
 4. SIR is defined as:
-
 5. Additional interference signals must be generated and saved in files before mixing
    a. LTE signals are generated as 90 sec length, up-sampled to 25 MHz and saved to files
    b. Adjacent band interference (ABI) are extracted from NACTN field measured radar waveforms and decimated to 25 MHz
 The GUI application is currently limited to process two radar one files, two LTE signals, and one ABI signal. All files must be on the binary IQ format with 25 MHz sampling rates. However, the framework can be used for different sampling rates. 
 
-Prerequisites for Deployment:
+### Prerequisites for Deployment:
 Verify that version 9.3 (R2017b) of the MATLAB Runtime is installed.   
 
 If the MATLAB Runtime is not installed, you can run the MATLAB Runtime installer.
@@ -79,10 +87,9 @@ in the MathWorks Documentation Center.
 NOTE: You will need administrator rights to run the MATLAB Runtime installer. 
 
 
-# 3. Files to Deploy and Package
+### Files to Deploy and Package
 
-Files to Package for Standalone 
-================================
+Files to Package for Standalone: 
 * ESCWaveformGenerator.exe
 * MCRInstaller.exe 
     Note: if end users are unable to download the MATLAB Runtime using the
@@ -91,7 +98,7 @@ Files to Package for Standalone
     Deployment Tool.
 * This readme file 
 
-# 4. Definitions
+### Definitions
 
 For information on deployment terminology, go to
 http://www.mathworks.com/help and select MATLAB Compiler >
