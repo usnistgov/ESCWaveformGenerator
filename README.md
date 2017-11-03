@@ -1,5 +1,17 @@
 # 3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
+<!-- TOC -->
 
+- [3.5 GHz Waveform Generation for Testing and Development of ESC Detectors](#35-ghz-waveform-generation-for-testing-and-development-of-esc-detectors)
+    - [1. Legal Disclaimers](#1-legal-disclaimers)
+        - [Software Disclaimer](#software-disclaimer)
+        - [Commercial Disclaimer](#commercial-disclaimer)
+    - [2. Outline](#2-outline)
+    - [3. Prerequisites for generating waveforms:](#3-prerequisites-for-generating-waveforms)
+        - [Prerequisites for Deployment:](#prerequisites-for-deployment)
+        - [Files to Deploy and Package](#files-to-deploy-and-package)
+        - [Definitions](#definitions)
+
+<!-- /TOC -->
 ![ESC Icon](src/res/icon.ico)
 ## 1. Legal Disclaimers
 ### Software Disclaimer
