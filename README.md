@@ -60,7 +60,10 @@
 - Generate training data for machine learning based algorithms 
 - Current development using Matlab 2017b
 - The Generation tool can be compiled and deployed
-- For more information see [Presentation Link]()
+- For more information see [WInnComm Presentation](docs/3.5_GHz_Waveform_Generation_for_Testing_and_Development_of_ESC_Detectors_WInnComm2017.pdf)
+
+This tool has both a GUI & 
+
 
 ## 3. Prerequisites for generating waveforms:
 1. Requires field measured radar waveforms 
