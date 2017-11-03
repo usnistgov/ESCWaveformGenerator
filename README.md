@@ -12,7 +12,6 @@
         - [Definitions](#definitions)
 
 <!-- /TOC -->
-![ESC Icon](src/res/icon.ico)
 ## 1. Legal Disclaimers
 ### Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
@@ -62,16 +61,13 @@
 - The Generation tool can be compiled and deployed
 - For more information see [WInnComm Presentation](docs/3.5_GHz_Waveform_Generation_for_Testing_and_Development_of_ESC_Detectors_WInnComm2017.pdf)
 
-This tool has both a GUI & 
-
-
 ## 3. Prerequisites for generating waveforms:
 1. Requires field measured radar waveforms 
     * [3.5 GHz Radar Waveform Capture at Point Loma Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-point-loma)
 
     * [3.5 GHz Radar Waveform Capture at Fort Story Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-fort-story-final-test-report)
     
-2. Files can be reduced in size using the included Decimator from the raw 225 MHz down to 25 MHz.  See the example testDecimate.m located at:
+2. Files can be reduced in size using the included Decimator (eg: from the raw 225 MHz down to 25 MHz).  See the example testDecimate.m located at:
 
     *  src\tests\testDecimate.m
 
