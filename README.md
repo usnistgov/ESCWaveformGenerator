@@ -5,20 +5,22 @@
 - [2. Legal Disclaimers](#2-legal-disclaimers)
     - [2.1. Software Disclaimer](#21-software-disclaimer)
     - [2.2. Commercial Disclaimer](#22-commercial-disclaimer)
-- [3. Outline](#3-outline)
+- [3. Project Summary](#3-project-summary)
     - [3.1. Project Goals](#31-project-goals)
     - [3.2. Design Philosophy](#32-design-philosophy)
         - [3.2.1. Matlab Framework](#321-matlab-framework)
         - [3.2.2. Matlab GUI](#322-matlab-gui)
 - [4. Development Details](#4-development-details)
-- [5. Prerequisites for generating waveforms:](#5-prerequisites-for-generating-waveforms)
-    - [5.1. Prerequisites for Deployment:](#51-prerequisites-for-deployment)
-    - [5.2. Files to Deploy and Package](#52-files-to-deploy-and-package)
-    - [5.3. Definitions](#53-definitions)
+- [5. Prerequisites:](#5-prerequisites)
+    - [5.1. Prerequisites for generating waveforms:](#51-prerequisites-for-generating-waveforms)
+    - [5.2. Prerequisites for Deployment:](#52-prerequisites-for-deployment)
+    - [5.3. Files to Deploy and Package](#53-files-to-deploy-and-package)
+    - [5.4. Definitions](#54-definitions)
 - [6. How to run](#6-how-to-run)
 - [7. Further Information](#7-further-information)
 
 <!-- /TOC -->
+
 # 2. Legal Disclaimers
 ## 2.1. Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
@@ -52,10 +54,12 @@
  property. The software developed by NIST employees is not subject to
  copyright protection within the United States.
 
+ See [NIST Software Disclaimer](https://www.nist.gov/disclaimer) for more details.
+
 ## 2.2. Commercial Disclaimer
  Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
  
-# 3. Outline
+# 3. Project Summary
 ## 3.1. Project Goals
 - Automates the generation of multiple waveform files 
 - Generate waveforms for developing detection algorithm of incumbent radar for 3.5 GHz spectrum sharing
@@ -98,7 +102,8 @@ Despite these limitations, the GUI simplifies the selection of certain parameter
 - Current development using Matlab 2017b
 - The Generation tool can be compiled and deployed. See the section [How to run](#6-how-to-run) for more details
 
-# 5. Prerequisites for generating waveforms:
+# 5. Prerequisites:
+## 5.1. Prerequisites for generating waveforms:
 1. Requires field measured radar waveforms 
     * [3.5 GHz Radar Waveform Capture at Point Loma Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-point-loma)
 
@@ -115,7 +120,7 @@ Despite these limitations, the GUI simplifies the selection of certain parameter
    b. Adjacent band interference (ABI) are extracted from NACTN field measured radar waveforms and decimated to 25 MHz
 The GUI application is currently limited to process two radar one files, two LTE signals, and one ABI signal. All files must be on the binary IQ format with 25 MHz sampling rates. However, the framework can be used for different sampling rates. 
 
-## 5.1. Prerequisites for Deployment:
+## 5.2. Prerequisites for Deployment:
 Verify that version 9.3 (R2017b) of the MATLAB Runtime is installed.   
 
 If the MATLAB Runtime is not installed, you can run the MATLAB Runtime installer.
@@ -134,8 +139,7 @@ in the MathWorks Documentation Center.
 
 NOTE: You will need administrator rights to run the MATLAB Runtime installer. 
 
-## 5.2. Files to Deploy and Package
-
+## 5.3. Files to Deploy and Package
 Files to Package for Standalone: 
 * ESCWaveformGenerator.exe
 * MCRInstaller.exe 
@@ -145,8 +149,7 @@ Files to Package for Standalone:
     Deployment Tool.
 * This readme file 
 
-## 5.3. Definitions
-
+## 5.4. Definitions
 For information on deployment terminology, go to
 http://www.mathworks.com/help and select MATLAB Compiler >
 Getting Started > About Application Deployment >
@@ -154,11 +157,11 @@ Deployment Product Terms in the MathWorks Documentation
 Center.
 
 # 6. How to run
-
-1. Run the included exe file
-2.	Compile from source 
+1. Run the included exe file (GUI only)
+2. Compile from source 
     * Use either mcc or compile GUI tool
-3.	Run in matlab
+    * see [Prerequisites for Deployment:](#51-prerequisites-for-deployment) for more details
+3. Run in matlab
     * tests folder contains some examples
 
 # 7. Further Information
