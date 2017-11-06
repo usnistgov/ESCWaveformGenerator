@@ -1,19 +1,26 @@
-# 3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
+# 1. GHz Waveform Generation for Testing and Development of ESC Detectors
 <!-- TOC -->
 
-- [3.5 GHz Waveform Generation for Testing and Development of ESC Detectors](#35-ghz-waveform-generation-for-testing-and-development-of-esc-detectors)
-    - [1. Legal Disclaimers](#1-legal-disclaimers)
-        - [Software Disclaimer](#software-disclaimer)
-        - [Commercial Disclaimer](#commercial-disclaimer)
-    - [2. Outline](#2-outline)
-    - [3. Prerequisites for generating waveforms:](#3-prerequisites-for-generating-waveforms)
-        - [Prerequisites for Deployment:](#prerequisites-for-deployment)
-        - [Files to Deploy and Package](#files-to-deploy-and-package)
-        - [Definitions](#definitions)
+- [1. GHz Waveform Generation for Testing and Development of ESC Detectors](#1-ghz-waveform-generation-for-testing-and-development-of-esc-detectors)
+- [2. Legal Disclaimers](#2-legal-disclaimers)
+    - [2.1. Software Disclaimer](#21-software-disclaimer)
+    - [2.2. Commercial Disclaimer](#22-commercial-disclaimer)
+- [3. Outline](#3-outline)
+    - [3.1. Project Goals](#31-project-goals)
+    - [3.2. Design Philosophy](#32-design-philosophy)
+        - [3.2.1. Matlab Framework](#321-matlab-framework)
+        - [3.2.2. Matlab GUI](#322-matlab-gui)
+- [4. Development Details](#4-development-details)
+- [5. Prerequisites for generating waveforms:](#5-prerequisites-for-generating-waveforms)
+    - [5.1. Prerequisites for Deployment:](#51-prerequisites-for-deployment)
+    - [5.2. Files to Deploy and Package](#52-files-to-deploy-and-package)
+    - [5.3. Definitions](#53-definitions)
+- [6. How to run](#6-how-to-run)
+- [7. Further Information](#7-further-information)
 
 <!-- /TOC -->
-## 1. Legal Disclaimers
-### Software Disclaimer
+# 2. Legal Disclaimers
+## 2.1. Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
  You may use, copy and distribute copies of the software in any medium,
  provided that you keep intact this entire notice. You may improve,
@@ -45,23 +52,53 @@
  property. The software developed by NIST employees is not subject to
  copyright protection within the United States.
 
-### Commercial Disclaimer
+## 2.2. Commercial Disclaimer
  Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
  
-## 2. Outline
-
-- A simple Matlab framework for reading/saving signals from/to large files 
-- Signal processing for decimating radar field-measured waveforms 
-- Signal processing for mixing radar field-measured waveforms with interference signals
-- The GUI simplifies the selection of certain parameters such as signal power levels, and randomizes other parameters such as start time, and frequency
+# 3. Outline
+## 3.1. Project Goals
 - Automates the generation of multiple waveform files 
 - Generate waveforms for developing detection algorithm of incumbent radar for 3.5 GHz spectrum sharing
 - Generate training data for machine learning based algorithms 
-- Current development using Matlab 2017b
-- The Generation tool can be compiled and deployed
-- For more information see [WInnComm Presentation](docs/3.5_GHz_Waveform_Generation_for_Testing_and_Development_of_ESC_Detectors_WInnComm2017.pdf)
 
-## 3. Prerequisites for generating waveforms:
+## 3.2. Design Philosophy
+This project consists of a framework and a GUI, both developed in MATLAB, see the [Development Details](#4-development-details) section for more details.
+
+### 3.2.1. Matlab Framework
+This project is built off a simple Matlab framework that was designed to accomplish a few things:
+1. Reads/Write large files in smaller and more manageable segments.
+2. Manage the state of the system (eg: time, filter) as to not introduce discontinuity resulting from the segmented read-write.
+3. Automate the generation of multiple waveform files, using Matlab’s parallel toolbox for parallelism.
+
+This framework allows for many other tools to be created building on this framework, such as the included decimator.
+
+While the original uses may include:
+* Generate waveforms for developing detection algorithm of incumbent radar for 3.5 GHz spectrum sharing
+* Generate training data for machine learning based algorithms 
+
+the modularity of this framework does lend itself to reuse in other projects with completely different goals.
+
+Unsorted (but useful bullet points)
+* Signal processing for decimating radar field-measured waveforms 
+* Signal processing for mixing radar field-measured waveforms with interference signals
+
+### 3.2.2. Matlab GUI
+A GUI was built upon the framework to improve user experience.  This GUI was built with a much more specific intention (Generate training data for machine learning based algorithms) and as a result has much less flexibility than the framework.
+
+Some examples of the limitations of the GUI:
+* Currently limits the waveform to a maximum of
+    * 2 two radar one files
+    * 2 LTE signals
+    * 1 ABI signal.
+* specifically designed for mixing radar field-measured waveforms with interference signals
+
+Despite these limitations, the GUI simplifies the selection of certain parameters such as signal power levels, and has the ability to easily randomize other parameters such as start time, and frequency
+
+# 4. Development Details
+- Current development using Matlab 2017b
+- The Generation tool can be compiled and deployed. See the section [How to run](#6-how-to-run) for more details
+
+# 5. Prerequisites for generating waveforms:
 1. Requires field measured radar waveforms 
     * [3.5 GHz Radar Waveform Capture at Point Loma Final Test Report](https://www.nist.gov/publications/35-ghz-radar-waveform-capture-point-loma)
 
@@ -78,7 +115,7 @@
    b. Adjacent band interference (ABI) are extracted from NACTN field measured radar waveforms and decimated to 25 MHz
 The GUI application is currently limited to process two radar one files, two LTE signals, and one ABI signal. All files must be on the binary IQ format with 25 MHz sampling rates. However, the framework can be used for different sampling rates. 
 
-### Prerequisites for Deployment:
+## 5.1. Prerequisites for Deployment:
 Verify that version 9.3 (R2017b) of the MATLAB Runtime is installed.   
 
 If the MATLAB Runtime is not installed, you can run the MATLAB Runtime installer.
@@ -97,8 +134,7 @@ in the MathWorks Documentation Center.
 
 NOTE: You will need administrator rights to run the MATLAB Runtime installer. 
 
-
-### Files to Deploy and Package
+## 5.2. Files to Deploy and Package
 
 Files to Package for Standalone: 
 * ESCWaveformGenerator.exe
@@ -109,10 +145,21 @@ Files to Package for Standalone:
     Deployment Tool.
 * This readme file 
 
-### Definitions
+## 5.3. Definitions
 
 For information on deployment terminology, go to
 http://www.mathworks.com/help and select MATLAB Compiler >
 Getting Started > About Application Deployment >
 Deployment Product Terms in the MathWorks Documentation
 Center.
+
+# 6. How to run
+
+1. Run the included exe file
+2.	Compile from source 
+    * Use either mcc or compile GUI tool
+3.	Run in matlab
+    * tests folder contains some examples
+
+# 7. Further Information
+- For more information see [WInnComm Presentation](docs/3.5_GHz_Waveform_Generation_for_Testing_and_Development_of_ESC_Detectors_WInnComm2017.pdf)
