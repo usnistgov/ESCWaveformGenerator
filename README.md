@@ -84,8 +84,9 @@ However these signals can be turned Of/Off interactively.
 After previewing the waveform, the parameters can be loaded to the generation panel and further adjusting the parameters if required. The generation panel allows single file generation with fixed parameters, or multiple file generation with either fixed, intervals, or random parameters. In the multiple file generation the signal sources are still randomized even if the other parameters are fixed.  
 * To make use of Power levels/SIR setting and estimation, radar peaks and thier location must be estimated and saved to samefilename_pks.mat files before hand.
 
-* By default, the GUI tool expects an *.xlsx file that contains each *.dat file name (IQ 16-bit integers) along with a parameter ADCScaleFactor for floating point conversion.
+* By default, the GUI tool expects an *.xlsx file that contains each *.dat file name (IQ 16-bit integers) for radar files along with a parameter ADCScaleFactor for floating point conversion.
 
+* TDD LTE signals can be generated via MATLAB LTE toolbox or captured from an RF device. In addition, channel effect can be applied in the GUI for the LTE signals.
 
 # 3. Development Details
 - Current development using MATLAB 2017b
