@@ -671,7 +671,7 @@ classdef waveform
                 jsonFilePath=strcat(this.waveformFilepath(1:end-3),'json');
                 [SaveJsonFileId,errmsg_write_json]=fopen(jsonFilePath,'w','n','UTF-8');
                 waveformMeta=getWaveformInfo(this,'meta');
-                
+                %waveformMeta.ID=[char(java.util.UUID.randomUUID),'-',datestr(now,'mm/dd/yy--HH:MM:SS.FFF')];
                 if isempty(errmsg_write_json)
                     fwrite(SaveJsonFileId,jsonencode(waveformMeta),'char');
                 else

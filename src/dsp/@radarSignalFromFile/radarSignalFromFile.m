@@ -98,22 +98,22 @@ classdef radarSignalFromFile<signalFromFile
          end
 
          
-        function signalFromFileInfo=getSignalInfo(this)
-        signalFromFileInfo.readScale=this.readScale;
-        signalFromFileInfo.inputFile=this.inputFile;
-        signalFromFileInfo.radarMetaFile=this.radarMetaFile;
-        signalFromFileInfo.inputFileID=this.inputFileID;
-        signalFromFileInfo.seekPositionSamples=this.seekPositionSamples;
-        signalFromFileInfo.samplesPerSegment=this.samplesPerSegment;
-        if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
-            [~,FileName,FileExt] = fileparts(this.inputFile);
-            logicalIndex=ismember(this.radarInfoTable.FileName,[FileName,FileExt]);
-            signalFromFileInfo.radarFileIndex=find(logicalIndex);
-            signalFromFileInfo.radarInfoTable=this.radarInfoTable(logicalIndex,:);
-        else
-            signalFromFileInfo.radarInfoTable=[];
-        end
-        end
+         function signalFromFileInfo=getSignalInfo(this)
+             signalFromFileInfo.readScale=this.readScale;
+             signalFromFileInfo.inputFile=this.inputFile;
+             signalFromFileInfo.radarMetaFile=this.radarMetaFile;
+             signalFromFileInfo.inputFileID=this.inputFileID;
+             signalFromFileInfo.seekPositionSamples=this.seekPositionSamples;
+             signalFromFileInfo.samplesPerSegment=this.samplesPerSegment;
+             if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
+                 [~,FileName,FileExt] = fileparts(this.inputFile);
+                 logicalIndex=ismember(this.radarInfoTable.FileName,[FileName,FileExt]);
+                 signalFromFileInfo.radarFileIndex=find(logicalIndex);
+                 signalFromFileInfo.radarInfoTable=this.radarInfoTable(logicalIndex,:);
+             else
+                 signalFromFileInfo.radarInfoTable=[];
+             end
+         end
         
 %         function signalTime=getSignalTime(this,Fs)
 %             if ~isempty(this.inputFile)

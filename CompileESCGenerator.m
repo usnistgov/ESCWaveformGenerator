@@ -26,6 +26,7 @@ IN_APP_DIR='app';
 DSP_DIR='dsp';
 UTIL_DIR='util';
 RES_DIR='res';
+APP_RES_DIR='bin\res';
 
 ICON_FILE='icon.ico';
 SPLASH_FILE='splash.png';
@@ -36,6 +37,10 @@ end
 if exist(APP_DIR,'dir')~=7
     mkdir(APP_DIR)
 end
+if exist(APP_RES_DIR,'dir')~=7
+    mkdir(APP_RES_DIR)
+end
+
 APP_SOURCE_NAME='ESCWaveformGenerator.mlapp';
 APP_NAME='ESCWaveformGenerator';
 WinMain='WinMain:ESCWaveformGenerator';
@@ -56,6 +61,7 @@ mcc('-o', APP_NAME,'-W',WinMain,'-T', 'link:exe' ,'-d', OUT_DIR,'-v',APP_SOURCE_
 cd(SOURCE_DIR);
 copyfile config ..\bin\config;
 copyfile res\CTL_logo.png ..\bin\res\CTL_logo.png;
+copyfile ..\README.md ..\bin\res\README.md;
 copyfile(SPLASH_FILE, '..\bin\app\splash.png')
 cd('..')
 
