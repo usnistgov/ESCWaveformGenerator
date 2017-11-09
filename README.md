@@ -121,7 +121,7 @@ To generate executable for the GUI tool.
     * see [Prerequisites:](#5-prerequisites) for more details
 
 ### 4.2.2. Precompiled Executable
-    If precompiled executable is needed, please contact us for details on how to access it.
+    If precompiled executable is needed, please contact us.
     
 # 5. Prerequisites:
 MATLAB prerequisites for deployment can be found in [Matlab Prerequisites](docs/Matlab_Prerequisites.txt)
