@@ -114,7 +114,9 @@ Running directly in MATLAB script requires further development to make use of th
 ## 4.2. Run from Deployed executable
 
 ### 4.2.1. Compile from source 
-    * Use either mcc or compile GUI tool
+To generate executable for the GUI tool.
+
+    * Use either mcc see CompileESCGenerator.m, or use MATLAB deploytool.
     * all necessary toolboxes are required during compilation in addition to MATLAB Compiler
     * see [Prerequisites:](#5-prerequisites) for more details
 
