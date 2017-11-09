@@ -122,4 +122,4 @@ Running directly in MATLAB script requires further development to make use of th
     If precompiled executable is needed, please contact us for details on how to access it.
     
 # 5. Prerequisites:
-Prerequisites for MATLAB can be found in [Matlab Prerequisites](docs/Matlab_Prerequisites.txt)
+MATLAB prerequisites for deployment can be found in [Matlab Prerequisites](docs/Matlab_Prerequisites.txt)
