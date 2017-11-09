@@ -86,7 +86,7 @@ After previewing the waveform, the parameters can be loaded to the generation pa
 
 * By default, the GUI tool expects an *.xlsx file that contains each *.dat file name (IQ 16-bit integers) for radar files along with a parameter ADCScaleFactor for floating point conversion.
 
-* TDD LTE signals can be generated via MATLAB LTE toolbox or captured from an RF device. In addition, channel effect can be applied in the GUI for the LTE signals.
+* TDD LTE signals can be generated via MATLAB LTE toolbox or captured from an RF device. In addition, channel effect can be applied in the GUI for the simulated LTE signals.
 
 # 3. Development Details
 - Current development using MATLAB 2017b
