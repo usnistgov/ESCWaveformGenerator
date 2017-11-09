@@ -75,18 +75,17 @@ This project is built off a simple MATLAB framework that:
 This framework allows for many other tools to be created building on this framework, such as the included decimator.
 
 ### 2.1.2. GUI
-A GUI was built upon the framework to improve user experience. It can preview segments of the waveform via software spectrum/spectrogram analyzer and time scope  before the generation process. This require adding the following signal sources:
+A GUI was built upon the framework to improve user experience. It can preview segments of the waveform via software spectrum/spectrogram analyzer and time scope  before the generation process. This requires adding the following signal (25 MHz sampling rate) sources:
 * 2 two radar one files
 * 2 LTE signals
-* 1 ABI signal
+* 1 ABI signal (e.g., radar 3 file)
 
 However these signals can be turned Of/Off interactively.
 After previewing the waveform, the parameters can be loaded to the generation panel and further adjusting the parameters if required. The generation panel allows single file generation with fixed parameters, or multiple file generation with either fixed, intervals, or random parameters. In the multiple file generation the signal sources are still randomized even if the other parameters are fixed.  
-* To make use of Power levels/SIR setting and estimation, radar peaks must be estimated and saved to files before hand.
+* To make use of Power levels/SIR setting and estimation, radar peaks and thier location must be estimated and saved to samefilename_pks.mat files before hand.
 
 * By default, the GUI tool expects an *.xlsx file that contains each *.dat file name (IQ 16-bit integers) along with a parameter ADCScaleFactor for floating point conversion.
 
-Despite these restrictions, the GUI simplifies the selection of certain parameters such as signal power levels, and has the ability to easily randomize other parameters such as start time, and frequency.
 
 # 3. Development Details
 - Current development using MATLAB 2017b
@@ -100,7 +99,7 @@ Despite these restrictions, the GUI simplifies the selection of certain paramete
     * \src\util\
 * To use the GUI tool as intended with field-measured waveforms, some pre-processing on waveforms is required, i.e., decimation and radar peak estimation, see examples at \src\tests\
 
-* At the MATLAB command prompt run appdesigner('ESCWaveformGenerator.mlapp')
+* At the MATLAB command prompt  change to dir \src\app\ and run appdesigner('ESCWaveformGenerator.mlapp')
 
 * Requires the following toolboxes to run all the functionalities:
     * Signal Processing Toolbox
