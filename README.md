@@ -92,7 +92,7 @@ Despite these restrictions, the GUI simplifies the selection of certain paramete
 - Current development using MATLAB 2017b
 - The Generation tool can be compiled and deployed. See the section [How to run](#4-how-to-run) for more details
 
- 4. How to run
+ # 4. How to run
 ## 4.1. Run in MATLAB
 
 * Add the required libraries to MATLAB path by adding the following folders:
