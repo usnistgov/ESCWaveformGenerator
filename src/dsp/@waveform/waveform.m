@@ -913,14 +913,10 @@ classdef waveform
             %TODO check how to use this (median) instead of max
             %medianPeakPowOrig_dB=pow2db((medianPeak).^2);
             
-            %TODO clean up this code (Begin unmerged)
             noisePowAdjustfactor=ones(this.numRadarSignals,1);
             noiseAdjustfactor_dB=this.P_KTB_dB-noisePSD_dB;
             noisePowAdjustfactor(noiseAdjustfactor_dB<0)=db2pow(noiseAdjustfactor_dB(noiseAdjustfactor_dB<0));
             noiseVolAdjustfactor=sqrt(noisePowAdjustfactor);
-%             peakPowAdjustfactor=db2pow(peakPowerThreshold_dB-medianPeakPowOrig_dB);
-%             peakVolAdjustfactor=sqrt(peakPowAdjustfactor);
-%             rdrGainLowUpVol=[peakVolAdjustfactor,noiseVolAdjustfactor];
             
             % need to make sure that peakVolAdjustfactor<noiseVolAdjustfactor otherwise
             % either don't use this waveform or set it to noiseVolAdjustfactor
@@ -930,7 +926,6 @@ classdef waveform
             dBMin=3;
             dBMax=6;
             LTEBandwidth=10e6;
-            %avrgLTEPSD=pow2db(mean(abs(LTESignalData).^2,1).'/LTEBandwidth);
             avrgLTEPSD=pow2db(max(mean(abs(LTESignalData).^2,1),[],3).'/LTEBandwidth);% mean of each LTE signal, min of each LTE signal relative to radar
             LTEGainsAboveKTB=randi([dBMin,dBMax],2,1);
             LTEGainsPow=db2pow((this.P_KTB_dB+LTEGainsAboveKTB)-avrgLTEPSD);
@@ -938,12 +933,7 @@ classdef waveform
             % in case of LTEStatus is 0, check for inf and set the gain to zero
             LTEGainsVol(isinf(LTEGainsVol))=0; % gain for each LTE signal
             
-            %LTESig=(LTEGainsVol.').*LTESignalData;
-%             for JL=1:this.numLTESignals
-%             LTESig(:,JL,:)=LTEGainsVol(JL)*LTESignalData(:,JL,:);
-%             end
             LTESig=(LTEGainsVol.').*LTESignalData;
-            % END unmerged
 
             SIRtargetNum=db2pow(this.targetSIR);
             
