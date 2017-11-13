@@ -32,18 +32,19 @@
 classdef peaksFinderExecutor<executor
     %Execute multiple signals using radarPeaksFinder
     %Example:
-    %        %inputFiles, radarMetaFile, save peaks to .mat file in the same dir of input files
-    %        % may take a lot of momory if run in parallel for multiple files 
-    %        numFiles=2;
-    %        %cell array of input files
-    %        inputFiles={'inputFilesPath\fileNo1.dat';'inputFilesPath\fileNo2.dat'};;
-    %        testMultiPeak=peaksFinderExecutor(numFiles);
-    %        %turn On parallel run, otherwise turn Off for sequential run 
-    %        multiDec.useParallel='On';
-    %        multiDec=initParallel(multiDec);
-    %        testMultiPeak.inputFiles=inputFiles; %cell array of input files
-    %        testMultiPeak.radarMetaFile=radarMetaFile;
-    %        testMultiPeak=runExecutor(testMultiPeak);
+           %inputFiles, radarMetaFile, save peaks to .mat file in the same dir of input files
+           % may take a lot of memory if run in parallel for multiple files 
+%            numFiles=2;
+%            %cell array of input files
+%            inputFiles={'inputFilesPath\fileNo1.dat';'inputFilesPath\fileNo2.dat'};
+%            radarMetaFile='inputFilesPath\radarmetafile.xlsx';
+%            testMultiPeak=peaksFinderExecutor(numFiles);
+%            %turn On parallel run, otherwise turn Off for sequential run 
+%            testMultiPeak.useParallel='On';
+%            testMultiPeak=initParallel(testMultiPeak);
+%            testMultiPeak.inputFiles=inputFiles; %cell array of input files
+%            testMultiPeak.radarMetaFile=radarMetaFile;
+%            testMultiPeak=runExecutor(testMultiPeak);
     %see also radarPeaksFinder, executor
     
     properties
@@ -75,15 +76,22 @@ classdef peaksFinderExecutor<executor
             if this.numFiles==length(inputFiles)
                 this.inputFiles=inputFiles;
             else
-                this.ERROR.inputFiles= MException('decimationExecutor:inputFiles', ...
+                this.ERROR.inputFiles= MException('peaksFinderExecutor:inputFiles', ...
                     'Number of input files must be equal to numFiles= %d',this.numFiles);
                 throw(this.ERROR.inputFiles);
             end
         end
         
         function this=set.radarMetaFile(this,radarMetaFile)
-            %TODO add check for radarMetaFile.xsl
-            this.radarMetaFile=radarMetaFile;
+            %checks for radarMetaFile file
+            
+            if exist(radarMetaFile, 'file') == 2
+                this.radarMetaFile=radarMetaFile;
+            else
+                this.ERROR.radarMetaFile= MException('peaksFinderExecutor:radarMetaFile', ...
+                    'radarMetaFile file does not exist, file name: %s',radarMetaFile);
+                throw(this.ERROR.radarMetaFile);
+            end
         end
 
         function this=executeSequential(this)

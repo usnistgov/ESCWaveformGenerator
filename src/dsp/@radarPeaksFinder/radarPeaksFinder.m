@@ -301,13 +301,13 @@ classdef radarPeaksFinder<radarSignalFromFile
         function this=radarPeaksFinder(radarInputFile,radarMetaFile,Fs,peakThresholdAboveNoise_dB)
             %Verify input file exists, throw error if they do not
               if (exist(radarInputFile,'file') ~= 2)
-                  ME = MException('signalDecimator:invalidFile', ...
+                  ME = MException('radarPeaksFinder:invalidFile', ...
                       'Input file does not exist! Filename:\n%s\n\n',...
                       radarInputFile);
                   throw(ME);
               else
                   this.inputFile=radarInputFile;
-                  this.peaksOutputFile=[radarInputFile(1:end-length('dec01.dat')),'pksTest.mat'];
+                  this.peaksOutputFile=[radarInputFile(1:end-length('dec01.dat')),'pks.mat'];
                   this=setRadarMetaFile(this,radarMetaFile);
               end          
             
@@ -327,120 +327,43 @@ classdef radarPeaksFinder<radarSignalFromFile
             this=initInputFile(this);
             
         end
+        
         function this=findRadarPeaks(this)
-                 Hd = dsp.FIRFilter( 'Numerator',this.filterNumerator);
-                 % get radar signal time info
-                 signalTime=getSignalTime(this);
-                 % read radar signal and get max every 1msec
-                 windowTime=1e-6;
-                 windowLength=floor(windowTime*this.Fs);
-                 numOfSegments=floor(signalTime.totalNumberOfSamples/windowLength);                
-%                 numOfSegmentsWithLeftOver=numOfSegments;
-%                  if signalTime.totalNumberOfSamples>numOfSegments*this.samplesPerSegment
-%                      leftOverSamples=signalTime.totalNumberOfSamples-numOfSegments*this.samplesPerSegment;
-%                  end
-%                  if leftOverSamples>0
-%                      numOfSegmentsWithLeftOver=numOfSegments+1;
-%                  end
-                 %filterRESET=false;
-                 %t0=0;
-                % for I=1:numOfSegmentsWithLeftOver
-%                      if (I==numOfSegmentsWithLeftOver) && (numOfSegmentsWithLeftOver~=numOfSegments)
-%                          this.samplesPerSegment=leftOverSamples;
-%                      end
-                     %read decimated radar file at once
-                     this.samplesPerSegment=signalTime.totalNumberOfSamples;
-                     sigMeas =readSamples(this);
-                     %this=seekNextPositionSamples(this);
-                     %filter data with 1MHz filter
-                     sigMeas=Hd(sigMeas);
-                     % Reshape to every microsecond & get max
-                     sigMeasReshape=abs(reshape(sigMeas,[windowLength,numOfSegments])); clear sigMeas;
-                     sigMeasReshapeMaxSegments=max(sigMeasReshape,[],1);clear sigMeasReshape;
-                     % find peaks with min peak distance
-                     tx=(0:(numOfSegments-1))*windowTime;
-                     MinPeakDistance=3.5;
-                     %figure;findpeaks(Data_Max_Segments,tx,'MinPeakDistance',MinPeakDistance)
-                     [pks,locs]=findpeaks(sigMeasReshapeMaxSegments,tx,'MinPeakDistance',MinPeakDistance);
-                     % data_size_postfilter=size(Data_Reshape_abs);
-                     
-                     if ~isempty(this.peakThresholdAboveNoise_dB)
-                         radarPeaks.pks=pks;
-                         radarPeaks.locs=locs;
-                         [this,sigmaW2,medianPeak,noiseEst,maxPeak,maxPeakLoc]=estimateRadarNoise(this,this.Fs,radarPeaks);
-                         pksIndx=((pow2db(pks.^2)-pow2db(sigmaW2))>this.peakThresholdAboveNoise_dB);
-                         pks=pks(pksIndx);
-                         locs=locs(pksIndx);
-                     end
-                     
-                     %save(this.peaksOutputFile,'tx','sigMeasReshapeMaxSegments','pks','locs');
-                     save(this.peaksOutputFile,'pks','locs');
-                     
-                     
-                     %%
-                     %t=((0:this.samplesPerSegment-1).')*(1/this.oldFs)+t0;
-                     
-                     %sigMeasShifted=sigMeas.*exp(-1i*2*pi*(this.freqShift)*t);
-                     %[sigResampled,~]=dspFun.resampleFilt(sigMeasShifted,this.oldFs,this.newFs,filterRESET,this.filterSpec);
-                     %writeSamples(this,sigResampled);
-                     %t0=t(end)+1/this.oldFs;
-                     
-%                      testVar(I,1)=length(sigMeas);
-%                      testVar(I,2)=length(t);
-%                      testVar(I,3)=length(sigMeasShifted);
-%                      testVar(I,4)=length(sigResampled);
-%                 end
-%                  save([this.outputFile,'Vars.mat'],'testVar','signalTime','numOfSegments','numOfSegmentsWithLeftOver',...
-%                      'leftOverSamples');
-        
-        
-%     %% 
-% 	%Rf_gain=this_RFgain;
-%     
-%     Ts=1/Fs;
-%     windowLength=floor(windowTime/Ts);
-%     windowTime=windowLength*Ts; %corrected windowTime in case of no integer multiples of Ts 
-%     overLapSampleNo=0;
-%     fileInfo=dir(radar_filepath);
-%     
-%     samplesPerSegment=windowLength;
-%     TotalNSamples=fileInfo.bytes/4;
-%     NumSeg=floor(TotalNSamples/(samplesPerSegment-overLapSampleNo));
-%     leftOver=TotalNSamples-NumSeg*samplesPerSegment;
-%     if leftOver>0
-%         NumSeg=NumSeg+1;
-%     end
-% 
-%     seekPosition=0;
-% 
-% 	%% 
-%     [~, Data_Vector_c] = radar_data_reader(radar_filepath,seekPosition,TotalNSamples);
-%     Data_Vector_c_gain=Rf_gain*Data_Vector_c; clear Data_Vector_c;
-%     
-%     %DEBUGGING
-%     data_size_prefilter=size(Data_Vector_c_gain); 
-%     
-%     %% Apply 2 MHz filter
-%     
-%     Data_Vector_filt = step(Hd,Data_Vector_c_gain); clear Data_Vector_c_gain;
-%     
-%     %% Reshape to every microsecond & report peak
-%     Data_Reshape=reshape(Data_Vector_filt,[samplesPerSegment,NumSeg]); clear Data_Vector_filt;
-%     Data_Reshape_abs=abs(Data_Reshape);clear Data_Reshape;
-%     Data_Max_Segments=max(Data_Reshape_abs,[],1);
-% 
-%     %%
-%     tx=(0:(NumSeg-1))*windowTime;
-%     MinPeakDistance=3.5;
-%     figure;findpeaks(Data_Max_Segments,tx,'MinPeakDistance',MinPeakDistance)
-%     [pks,locs]=findpeaks(Data_Max_Segments,tx,'MinPeakDistance',MinPeakDistance);
-%     %pks=find(pks_all>peaks_threshold);
-%     %locs=locs_all(find(pks==pks);
-%     %%
-%     %DEBUGGING
-%     data_size_postfilter=size(Data_Reshape_abs);
-%     save(save_filepath,'tx','Data_Max_Segments','pks','locs','data_size_prefilter','data_size_postfilter')
-        
+            Hd = dsp.FIRFilter( 'Numerator',this.filterNumerator);
+            % get radar signal time info
+            signalTime=getSignalTime(this);
+            % read radar signal and get max every 1msec
+            windowTime=1e-6;
+            windowLength=floor(windowTime*this.Fs);
+            numOfSegments=floor(signalTime.totalNumberOfSamples/windowLength);
+            
+            %read decimated radar file at once
+            this.samplesPerSegment=signalTime.totalNumberOfSamples;
+            sigMeas =readSamples(this);
+            %filter data with 1MHz filter
+            sigMeas=Hd(sigMeas);
+            % Reshape to every microsecond & get max
+            sigMeasReshape=abs(reshape(sigMeas,[windowLength,numOfSegments])); clear sigMeas;
+            sigMeasReshapeMaxSegments=max(sigMeasReshape,[],1);clear sigMeasReshape;
+            % find peaks with min peak distance
+            tx=(0:(numOfSegments-1))*windowTime;
+            MinPeakDistance=3.5;
+            %figure;findpeaks(Data_Max_Segments,tx,'MinPeakDistance',MinPeakDistance)
+            [pks,locs]=findpeaks(sigMeasReshapeMaxSegments,tx,'MinPeakDistance',MinPeakDistance);
+            % data_size_postfilter=size(Data_Reshape_abs);
+            
+            if ~isempty(this.peakThresholdAboveNoise_dB)
+                radarPeaks.pks=pks;
+                radarPeaks.locs=locs;
+                [this,sigmaW2,medianPeak,noiseEst,maxPeak,maxPeakLoc]=estimateRadarNoise(this,this.Fs,radarPeaks);
+                pksIndx=((pow2db(pks.^2)-pow2db(sigmaW2))>this.peakThresholdAboveNoise_dB);
+                pks=pks(pksIndx);
+                locs=locs(pksIndx);
+            end
+            
+            %save(this.peaksOutputFile,'tx','sigMeasReshapeMaxSegments','pks','locs');
+            save(this.peaksOutputFile,'pks','locs');
+            
         end
         
         
