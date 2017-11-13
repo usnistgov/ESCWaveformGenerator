@@ -1,12 +1,3 @@
-# 3.5 GHz Waveform Generation for Testing and Development of ESC Detectors
-<!-- TOC -->
-- [1. Legal Disclaimers](#1-legal-disclaimers)
-    - [1.1. Software Disclaimer](#11-software-disclaimer)
-    - [1.2. Commercial Disclaimer](#12-commercial-disclaimer)
-<!-- /TOC -->
-
-# 1. Legal Disclaimers
-## 1.1. Software Disclaimer
  NIST-developed software is provided by NIST as a public service. 
  You may use, copy and distribute copies of the software in any medium,
  provided that you keep intact this entire notice. You may improve,
@@ -39,6 +30,3 @@
  copyright protection within the United States.
 
  See [NIST Software Disclaimer](https://www.nist.gov/disclaimer) for more details.
-
-## 1.2. Commercial Disclaimer
- Certain commercial equipment, instruments, or materials are identified in this paper to foster understanding. Such identification does not imply recommendation or endorsement by the National Institute of Standards and Technology, nor does it imply that the materials or equipment identified are necessarily the best available for the purpose.
