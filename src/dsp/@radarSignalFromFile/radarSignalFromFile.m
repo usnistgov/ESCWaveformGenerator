@@ -133,7 +133,7 @@ classdef radarSignalFromFile<signalFromFile
             %% Import the data
             if exist(this.radarMetaFile, 'file') == 2
                 %MSGID='MATLAB:table:ModifiedAndSavedVarnames';warning('off', MSGID);
-                this.radarInfoTable=readtable(this.radarMetaFile);
+                this.radarInfoTable=readtable(this.radarMetaFile,'Basic',true);
             else
              this.radarInfoTable=[];   
             end
