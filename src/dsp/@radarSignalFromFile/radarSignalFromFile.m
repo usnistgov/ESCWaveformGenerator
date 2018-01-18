@@ -46,7 +46,7 @@ classdef radarSignalFromFile<signalFromFile
 
     properties(Constant)
 %    bytesPerSample=4;
-    combinedFrontEndGain=10.6;
+%    combinedFrontEndGain=10.6;
    % combinedFrontEndGain=sqrt(db2pow(19.8)); % San Diego release 
    % combinedFrontEndGain=sqrt(db2pow(22.2)); % Virginia Beach release
 %  combinedFrontEndGain=1;
@@ -85,7 +85,12 @@ classdef radarSignalFromFile<signalFromFile
              if nargin<2
                  if ~isempty(this.radarInfoTable) && ~isempty(this.inputFile)
                      [~,FileName,FileExt] = fileparts(this.inputFile);
-                     this.readScale=this.radarInfoTable.ADCScaleFactor(ismember(this.radarInfoTable.FileName,[FileName,FileExt]))/this.combinedFrontEndGain;
+                     foundFileIndex=ismember(this.radarInfoTable.FileName,[FileName,FileExt]);
+                     
+                     Vgain=10^(this.radarInfoTable.CombinedFrontEndGain_dB(foundFileIndex)/20);  % convert amplifier gain to linear units
+                     Vcal=10^(this.radarInfoTable.VST_cal_dB(foundFileIndex)/20); % corrects for VST calibration in dB
+
+                     this.readScale=this.radarInfoTable.ADCScaleFactor(foundFileIndex)*Vcal/Vgain; % adjust data for ADC scale and front end gain
                     % disp(num2str(this.radarInfoTable.ADCScaleFactor(ismember(this.radarInfoTable.FileName,[FileName,FileExt]))))
                  else
                      this.signalFromFileERROR.setReadScale= MException('radarSignalFromFile:RadarMeta', ...
