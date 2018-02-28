@@ -66,7 +66,7 @@ copyfile(SPLASH_FILE, '..\bin\app\splash.png')
 cd('..')
 
 %% restart matlab
-% !matlab &
-% exit
+!matlab &
+exit
 
 %mcc -o ESCWaveformGenerator -W WinMain:ESCWaveformGenerator -T link:exe -d 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\ESCWaveformGenerator\for_testing' -v 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\app\ESCWaveformGenerator.mlapp' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@dspFun\dspFun.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@executor\executor.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\util\@folderBrowserGUI\folderBrowserGUI.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@radarSignalFromFile\radarSignalFromFile.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@signalFromFile\signalFromFile.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@signalToFile\signalToFile.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@threeGPPChannel\threeGPPChannel.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\util\@utilFun\utilFun.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@waveform\waveform.m' -a 'D:\Spectrum-Share\Waveforms data\ESCWaveformGenerator\src\dsp\@waveformGenerator\waveformGenerator.m' -r 'C:\Program Files\MATLAB\R2017b\toolbox\compiler\Resources\default_icon.ico' 
