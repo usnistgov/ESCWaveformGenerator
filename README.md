@@ -119,9 +119,6 @@ To generate executable for the GUI tool.
     * Use either mcc see CompileESCGenerator.m, or use MATLAB deploytool.
     * all necessary toolboxes are required during compilation in addition to MATLAB Compiler
     * see [Prerequisites:](#5-prerequisites) for more details
-
-### 4.2.2. Precompiled Executable
-    If precompiled executable is needed, please contact us.
-    
+   
 # 5. Prerequisites:
 MATLAB prerequisites for deployment can be found in [Matlab Prerequisites](docs/Matlab_Prerequisites.txt)
